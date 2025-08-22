@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Finote – مصاريف + نوتس</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --bg-soft: rgba(255,255,255,0.04);
+      --card: rgba(255,255,255,0.06);
+      --text: #eaf0f6;
+      --muted: #a8b3c7;
+      --primary: #5df2ff;
+      --accent: #8a7dff;
+      --danger: #ff6b6b;
+      --success: #31d0a0;
+      --warning: #ffa726;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --glass: blur(8px) saturate(140%);
+    }
+    /* Light theme */
+    .light {
+      --bg: #f6f8fb;
+      --bg-soft: rgba(0,0,0,0.04);
+      --card: rgba(255,255,255,0.8);
+      --text: #0c1725;
+      --muted: #4a5463;
+      --primary: #0db3c6;
+      --accent: #5b50e6;
+      --danger: #d93636;
+      --success: #2ea574;
+      --warning: #f57c00;
+      --shadow: 0 10px 22px rgba(0,0,0,.10);
+      --glass: blur(6px) saturate(120%);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(93,242,255,.12), transparent 40%),
+                  radial-gradient(900px 700px at -10% 110%, rgba(138,125,255,.12), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 480px; margin: 0 auto; width: 100%; min-height: 100vh;
+      display: flex; flex-direction: column; position: relative;
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0)) , var(--bg-soft);
+      box-shadow: var(--shadow);
+    }
+    .topbar { display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; }
+    .brand { display:flex; gap:8px; align-items:center; font-weight:700; letter-spacing:.3px; }
+    .logo {
+      width: 34px; height: 34px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 6px 18px rgba(141, 131, 255, .35), inset 0 1px 0 rgba(255,255,255,.25);
+    }
+
+    .mode-toggle { border: 0; border-radius: 14px; padding: 10px 12px; cursor: pointer;
+      color: var(--text); background: var(--card); box-shadow: var(--shadow);
+      display:flex; align-items:center; gap:8px; font-weight:600; }
+
+    main { flex: 1 1 auto; padding: 16px; }
+
+    .card { background: var(--card); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+    .balance { text-align:center; padding: 20px 14px; }
+    .balance .label { color: var(--muted); font-size: 14px; }
+    .balance .value { font-size: 34px; font-weight: 800; letter-spacing: .6px; margin-top: 6px; }
+    .balance .value.negative { color: var(--danger); }
+    .balance .value.positive { color: var(--success); }
+
+    .balance-toggle {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+    .balance-toggle:hover {
+      transform: scale(1.1);
+      background: var(--bg-soft);
+    }
+    .balance-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+    .stat-card { background: var(--card); border-radius: 14px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { font-weight: 700; margin-top: 4px; }
+    .stat-income { color: var(--success); }
+    .stat-expense { color: var(--danger); }
+
+    .actions { display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+    .btn { border:0; border-radius: 14px; padding: 12px; font-weight: 700; cursor: pointer; color:#091018; transition: all 0.2s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), #9ff7ff); }
+    .btn-accent  { background: linear-gradient(135deg, var(--accent), #c2bcff); color:#fff; }
+    .btn-danger  { background: linear-gradient(135deg, var(--danger), #ff9a9a); }
+    .btn-ghost   { background: var(--card); color: var(--text); border:1px solid rgba(255,255,255,.08); }
+    .btn.full { grid-column: 1 / -1; }
+
+    .section-title { margin: 18px 4px 10px; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+
+    .tx-list { display:flex; flex-direction:column; gap:8px; }
+    .tx-item { display:flex; justify-content:space-between; align-items:center; background: var(--card); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.2s ease; }
+    .tx-item:hover { transform: translateY(-1px); box-shadow: 0 15px 35px rgba(0,0,0,.4); }
+    .tx-left { display:flex; gap:10px; align-items:center; }
+    .tx-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.08); display:grid; place-items:center; font-weight:800; }
+    .tx-icon.income { background: rgba(49, 208, 160, 0.2); color: var(--success); }
+    .tx-icon.expense { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
+    .tx-title { font-weight:700; }
+    .tx-meta { color: var(--muted); font-size: 12px; }
+    .tx-amount.plus { color: var(--success); font-weight:800; }
+    .tx-amount.minus { color: var(--danger); font-weight:800; }
+
+    /* Filter Controls */
+    .filter-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .filter-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,.12); background: transparent; color: var(--muted); border-radius: 20px; cursor: pointer; font-size: 12px; }
+    .filter-btn.active { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+
+    /* Notes */
+    .notes-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .notes-grid { display:flex; flex-direction:column; gap:10px; }
+    .note { background: var(--card); border-radius: 16px; padding: 12px; box-shadow: var(--shadow); position:relative; transition: all 0.2s ease; }
+    .note:hover { transform: translateY(-1px); box-shadow: 0 15px 35px rgba(0,0,0,.4); }
+    .note.pinned { outline: 2px dashed var(--accent); }
+    .note-title { font-weight:800; margin-bottom:4px; }
+    .note-content { margin: 6px 0; }
+    .note-meta { font-size: 12px; color: var(--muted); }
+    .note-actions { display:flex; gap:8px; margin-top:10px; }
+
+    /* Tabs (bottom nav) */
+    .tabs { position: sticky; bottom: 0; z-index: 10; backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+            background: linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,0)), var(--bg-soft); box-shadow: var(--shadow); }
+    .tabbar { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; padding: 10px; }
+    .tab-btn { border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; color: var(--text); background: var(--card); transition: all 0.2s ease; }
+    .tab-btn:hover { transform: translateY(-1px); }
+    .tab-btn.active { outline: 2px solid var(--primary); box-shadow: 0 0 0 6px rgba(93,242,255,.12); }
+
+    /* Modal */
+    dialog { width: min(520px, 92vw); border: 0; border-radius: 18px; padding: 0; box-shadow: var(--shadow); background: var(--card); color: var(--text); }
+    dialog::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .modal-body { padding:16px; }
+    .modal-actions { display:flex; gap:10px; padding: 0 16px 16px; }
+    .close-x { background: transparent; border:0; color: var(--muted); font-size: 18px; cursor:pointer; }
+
+    label { display:block; font-weight:700; margin: 10px 2px 6px; }
+    input, select, textarea { width:100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text); }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); }
+    textarea { min-height: 96px; resize: vertical; }
+
+    .empty { color: var(--muted); text-align: center; padding: 18px; border:1px dashed rgba(255,255,255,.15); border-radius: 14px; }
+
+    /* Delete confirmation */
+    .delete-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .confirm-delete { background: var(--danger); color: white; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+    .cancel-delete { background: var(--muted); color: white; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+
+    /* Utilities */
+    .row { display:flex; gap:10px; }
+    .row > * { flex:1; }
+
+    /* Export button */
+    .export-btn { background: var(--accent); color: white; border: 0; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 12px; }
+
+    /* New styles for notification animation */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="topbar">
+        <div class="brand"><div class="logo" aria-hidden="true"></div> Finote</div>
+        <button id="modeBtn" class="mode-toggle" aria-label="تبديل الوضع">🌙 / ☀️</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab" aria-label="لوحة التحكم">
+        <div class="card balance">
+          <div class="label">الرصيد الحالي</div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <div class="value" id="balanceValue">••••• EGP</div>
+            <button class="balance-toggle" id="balanceToggle" aria-label="إظهار/إخفاء الرصيد">👁️</button>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">إجمالي الدخل</div>
+            <div class="stat-value stat-income" id="totalIncome">0 EGP</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">إجمالي المصروفات</div>
+            <div class="stat-value stat-expense" id="totalExpenses">0 EGP</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnIncome">+ دخل</button>
+          <button class="btn btn-danger" id="btnExpense">+ مصروف</button>
+          <button class="btn btn-accent full" id="btnQuickNote">+ نوت سريعة</button>
+        </div>
+
+        <div class="section-title">
+          المعاملات الأخيرة
+          <div style="display: flex; gap: 8px;">
+            <button class="export-btn" id="btnExportData">تصدير</button>
+            <button class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" id="btnClearAll">مسح الكل</button>
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <button class="filter-btn active" data-filter="all">الكل</button>
+          <button class="filter-btn" data-filter="income">دخل</button>
+          <button class="filter-btn" data-filter="expense">مصروف</button>
+          <button class="filter-btn" data-filter="today">اليوم</button>
+        </div>
+        
+        <div id="recentList" class="tx-list"></div>
+      </section>
+
+      <!-- TRANSACTIONS TAB -->
+      <section id="tab-transactions" class="tab" hidden aria-label="جميع المعاملات">
+        <div class="section-title">
+          جميع المعاملات
+          <span id="txCount">0 معاملة</span>
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" data-filter="all">الكل</button>
+          <button class="filter-btn" data-filter="income">دخل</button>
+          <button class="filter-btn" data-filter="expense">مصروف</button>
+        </div>
+        <div id="allTransactionsList" class="tx-list"></div>
+      </section>
+
+      <!-- NOTES TAB -->
+      <section id="tab-notes" class="tab" hidden aria-label="النوتس">
+        <div class="notes-head">
+          <h3 style="margin:0">النوتس</h3>
+          <button class="btn btn-primary" id="btnAddNote">+ إضافة نوت</button>
+        </div>
+        <div class="notes-grid" id="notesList"></div>
+      </section>
+    </main>
+
+    <!-- Bottom Tabs -->
+    <nav class="tabs" aria-label="التنقل السفلي">
+      <div class="tabbar">
+        <button class="tab-btn active" data-tab="dashboard">الرئيسية</button>
+        <button class="tab-btn" data-tab="transactions">المعاملات</button>
+        <button class="tab-btn" data-tab="notes">النوتس</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Modals -->
+  <dialog id="modalTx">
+    <form method="dialog" id="txForm">
+      <div class="modal-head">
+        <div id="txModalTitle">إضافة معاملة</div> <!-- Changed to div for modal title -->
+        <button class="close-x" type="button" onclick="closeTx()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>العنوان</label>
+        <input required type="text" id="txTitleInput" placeholder="مثال: راتب، إيجار، طعام" />
+        <div class="row">
+          <div>
+            <label>المبلغ (EGP)</label>
+            <input required type="number" step="0.01" min="0" id="txAmount" />
+          </div>
+          <div>
+            <label>النوع</label>
+            <select id="txType">
+              <option value="income">دخل</option>
+              <option value="expense">مصروف</option>
+            </select>
+          </div>
+        </div>
+        <label>الفئة (اختياري)</label>
+        <input type="text" id="txCategory" placeholder="تفاصيل إضافية: وجبة غداء، فاتورة الكهرباء…" list="categoryList" />
+        <datalist id="categoryList"></datalist>
+        <label>التاريخ</label>
+        <input type="date" id="txDate" />
+        <label>ملاحظة (اختياري)</label>
+        <textarea id="txNote" placeholder="تفاصيل سريعة"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeTx()">إلغاء</button>
+        <button class="btn btn-primary" id="txSave" value="default">حفظ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="modalNote">
+    <form method="dialog" id="noteForm">
+      <div class="modal-head">
+        <div id="noteTitle">نوت جديدة</div>
+        <button class="close-x" type="button" onclick="closeNote()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>العنوان</label>
+        <input id="noteInputTitle" type="text" placeholder="عنوان النوت" />
+        <label>المحتوى</label>
+        <textarea id="noteInputContent" placeholder="اكتب ملاحظتك هنا"></textarea>
+        <label style="display:flex; align-items:center; gap:8px; margin-top:12px">
+          <input type="checkbox" id="notePinned" style="width:auto" /> تثبيت النوت (Pin)
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeNote()">إلغاء</button>
+        <button class="btn btn-primary" id="noteSave" value="default">حفظ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Custom Confirmation Modal -->
+  <dialog id="confirmationModal">
+    <div class="modal-head">
+      <div id="confirmationModalTitle">تأكيد</div>
+      <button class="close-x" type="button" onclick="closeConfirmationModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmationModalMessage"></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" type="button" id="cancelConfirmationBtn">إلغاء</button>
+      <button class="btn btn-danger" id="confirmActionBtn">تأكيد</button>
+    </div>
+  </dialog>
+
+
+  <script>
+    // ====== Storage Helpers ======
+    const LS_KEYS = {
+      TX: 'finote_transactions_v1',
+      NOTES: 'finote_notes_v1',
+      THEME: 'finote_theme'
+    };
+    const readLS = (k, fallback) => {
+      try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
+    }
+    const writeLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    // ====== State ======
+    let transactions = readLS(LS_KEYS.TX, []);
+    let notes = readLS(LS_KEYS.NOTES, []);
+    let currentFilter = 'all';
+    let balanceVisible = readLS('finote_balance_visible', false);
+
+    // ====== Theme ======
+    const appRoot = document.documentElement; // <html>
+    const savedTheme = readLS(LS_KEYS.THEME, 'dark');
+    if (savedTheme === 'light') appRoot.classList.add('light');
+    const modeBtn = document.getElementById('modeBtn');
+    const applyTheme = () => {
+      const isLight = appRoot.classList.toggle('light');
+      writeLS(LS_KEYS.THEME, isLight ? 'light' : 'dark');
+    };
+    modeBtn.addEventListener('click', applyTheme);
+
+    // ====== Tabs ======
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabs = {
+      dashboard: document.getElementById('tab-dashboard'),
+      transactions: document.getElementById('tab-transactions'),
+      notes: document.getElementById('tab-notes')
+    };
+    tabBtns.forEach(btn => btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.dataset.tab;
+      for (const key in tabs) tabs[key].hidden = key !== t;
+      if (t === 'transactions') renderAllTransactions();
+    }));
+
+    // ====== Filter System ======
+    function setupFilters() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const parent = btn.closest('section');
+          parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          
+          if (parent.id === 'tab-dashboard') {
+            renderRecent();
+          } else if (parent.id === 'tab-transactions') {
+            renderAllTransactions();
+          }
+        });
+      });
+    }
+
+    // ====== Utilities ======
+    const fmt = new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 2 });
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+    function filterTransactions(txList, filter = 'all') {
+      const today = todayISO();
+      switch(filter) {
+        case 'income': return txList.filter(t => t.type === 'income');
+        case 'expense': return txList.filter(t => t.type === 'expense');
+        case 'today': return txList.filter(t => t.date === today);
+        default: return txList;
+      }
+    }
+
+    // ====== Render Balance & Stats ======
+    const balanceEl = document.getElementById('balanceValue');
+    const totalIncomeEl = document.getElementById('totalIncome');
+    const totalExpensesEl = document.getElementById('totalExpenses');
+
+    function calcStats() {
+      let totalIncome = 0, totalExpenses = 0;
+      for (const t of transactions) {
+        if (t.type === 'income') totalIncome += (+t.amount);
+        else totalExpenses += (+t.amount);
+      }
+      const balance = totalIncome - totalExpenses;
+      return { balance, totalIncome, totalExpenses };
+    }
+
+    function renderBalance() {
+      const { balance, totalIncome, totalExpenses } = calcStats();
+      const balanceEl = document.getElementById('balanceValue');
+      const toggleBtn = document.getElementById('balanceToggle');
+      
+      if (balanceVisible) {
+        balanceEl.textContent = `${fmt.format(balance)} EGP`;
+        toggleBtn.textContent = '🙈';
+        toggleBtn.setAttribute('aria-label', 'إخفاء الرصيد');
+      } else {
+        balanceEl.textContent = '••••• EGP';
+        toggleBtn.textContent = '👁️';
+        toggleBtn.setAttribute('aria-label', 'إظهار الرصيد');
+      }
+      
+      balanceEl.className = 'value ' + (balance >= 0 ? 'positive' : 'negative');
+      
+      totalIncomeEl.textContent = `${fmt.format(totalIncome)} EGP`;
+      totalExpensesEl.textContent = `${fmt.format(totalExpenses)} EGP`;
+    }
+
+    // ====== Balance Toggle ======
+    function toggleBalanceVisibility() {
+      balanceVisible = !balanceVisible;
+      writeLS('finote_balance_visible', balanceVisible);
+      renderBalance();
+    }
+
+    document.getElementById('balanceToggle').addEventListener('click', toggleBalanceVisibility);
+
+    // ====== Render Transactions ======
+    const recentList = document.getElementById('recentList');
+    const allTransactionsList = document.getElementById('allTransactionsList');
+    const txCountEl = document.getElementById('txCount');
+
+    function createTransactionElement(t, showDelete = false) {
+      const item = document.createElement('div');
+      item.className = 'tx-item';
+      // Use t.title as the main display title, and t.category/t.note in meta
+      const metaText = [t.category, t.note].filter(Boolean).map(escapeHTML).join(' · ');
+      item.innerHTML = `
+        <div class="tx-left">
+          <div class="tx-icon ${t.type}">${t.type === 'income' ? '+' : '–'}</div>
+          <div>
+            <div class="tx-title">${escapeHTML(t.title)}</div>
+            <div class="tx-meta">${t.date} ${metaText ? ' · ' + metaText : ''}</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="tx-amount ${t.type==='income'?'plus':'minus'}">${t.type==='income'?'+':'-'}${fmt.format(+t.amount)} EGP</div>
+          ${showDelete ? `<button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" onclick="deleteTransaction('${t.id}')">حذف</button>` : ''}
+        </div>
+      `;
+      return item;
+    }
+
+    function renderRecent() {
+      recentList.innerHTML = '';
+      if (!transactions.length) {
+        recentList.innerHTML = `<div class="empty">لا توجد معاملات بعد</div>`;
+        return;
+      }
+      
+      const filtered = filterTransactions(transactions, currentFilter);
+      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const last5 = sorted.slice(0, 5);
+      
+      if (!last5.length) {
+        recentList.innerHTML = `<div class="empty">لا توجد معاملات مطابقة للفلتر</div>`;
+        return;
+      }
+      
+      for (const t of last5) {
+        recentList.appendChild(createTransactionElement(t));
+      }
+    }
+
+    function renderAllTransactions() {
+      allTransactionsList.innerHTML = '';
+      
+      const filtered = filterTransactions(transactions, currentFilter);
+      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      
+      txCountEl.textContent = `${sorted.length} معاملة`;
+      
+      if (!sorted.length) {
+        allTransactionsList.innerHTML = `<div class="empty">لا توجد معاملات</div>`;
+        return;
+      }
+      
+      for (const t of sorted) {
+        allTransactionsList.appendChild(createTransactionElement(t, true));
+      }
+    }
+
+    // ====== Delete Transaction ======
+    function deleteTransaction(id) {
+      showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه المعاملة؟', 'تأكيد الحذف', () => {
+        transactions = transactions.filter(t => t.id !== id);
+        writeLS(LS_KEYS.TX, transactions);
+        renderBalance();
+        renderRecent();
+        renderAllTransactions();
+        updateCategoryList();
+        showNotification('تم حذف المعاملة بنجاح.', 'success');
+      });
+    }
+
+    // ====== Category Auto-complete ======
+    function updateCategoryList() {
+      const categoryList = document.getElementById('categoryList');
+      const categories = [...new Set(transactions.map(t => t.category).filter(c => c))];
+      categoryList.innerHTML = categories.map(c => `<option value="${escapeHTML(c)}"></option>`).join('');
+    }
+
+    // ====== Transactions Modal ======
+    const modalTx = document.getElementById('modalTx');
+    const txModalTitle = document.getElementById('txModalTitle'); // Changed ID to avoid conflict with input
+    const txTitleInput = document.getElementById('txTitleInput'); // New input for transaction title
+    const txAmount = document.getElementById('txAmount');
+    const txType = document.getElementById('txType');
+    const txCategory = document.getElementById('txCategory');
+    const txDate = document.getElementById('txDate');
+    const txNote = document.getElementById('txNote');
+    
+
+    function openTx(type='income') {
+      txModalTitle.textContent = type === 'income' ? 'إضافة دخل' : 'إضافة مصروف';
+      txType.value = type;
+      txTitleInput.value = ''; // Clear new title input
+      txAmount.value = '';
+      txCategory.value = '';
+      txDate.valueAsDate = new Date();
+      txNote.value = '';
+      modalTx.showModal();
+    }
+    function closeTx(){ modalTx.close(); }
+
+    document.getElementById('btnIncome').addEventListener('click', ()=> openTx('income'));
+    document.getElementById('btnExpense').addEventListener('click', ()=> openTx('expense'));
+
+    document.getElementById('txForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const amt = parseFloat(txAmount.value||'0');
+      if (!(amt>0)) {
+        showNotification('من فضلك أدخل مبلغ صحيح.', 'danger');
+        return;
+      }
+      if (!txTitleInput.value.trim()) {
+        showNotification('من فضلك أدخل عنوان المعاملة.', 'danger');
+        return;
+      }
+      const t = {
+        id: uid(),
+        title: txTitleInput.value.trim(), // New title field
+        type: txType.value,
+        amount: amt,
+        category: txCategory.value.trim(),
+        date: txDate.value || todayISO(),
+        note: txNote.value.trim(),
+        createdAt: new Date().toISOString()
+      };
+      transactions.push(t);
+      writeLS(LS_KEYS.TX, transactions);
+      renderBalance();
+      renderRecent();
+      updateCategoryList();
+      closeTx();
+      showNotification('تم حفظ المعاملة بنجاح.', 'success');
+    });
+
+    // ====== Notes Modal ======
+    const modalNote = document.getElementById('modalNote');
+    const noteInputTitle = document.getElementById('noteInputTitle');
+    const noteInputContent = document.getElementById('noteInputContent');
+    const notePinned = document.getElementById('notePinned');
+    const noteTitle = document.getElementById('noteTitle');
+
+    let editingNoteId = null;
+
+    function openNote(editId=null) {
+      editingNoteId = editId;
+      if (editId) {
+        const n = notes.find(n=>n.id===editId);
+        if (!n) return;
+        noteTitle.textContent = 'تعديل نوت';
+        noteInputTitle.value = n.title || '';
+        noteInputContent.value = n.content || '';
+        notePinned.checked = !!n.pinned;
+      } else {
+        noteTitle.textContent = 'نوت جديدة';
+        noteInputTitle.value = '';
+        noteInputContent.value = '';
+        notePinned.checked = false;
+      }
+      modalNote.showModal();
+    }
+    function closeNote(){ modalNote.close(); editingNoteId=null; }
+
+    document.getElementById('btnAddNote').addEventListener('click', ()=> openNote());
+
+    document.getElementById('noteForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const base = {
+        title: (noteInputTitle.value||'').trim(),
+        content: (noteInputContent.value||'').trim(),
+        pinned: !!notePinned.checked
+      };
+      
+      if (!base.title && !base.content) {
+        showNotification('من فضلك أدخل عنوان أو محتوى للنوت.', 'danger');
+        return;
+      }
+      
+      if (editingNoteId) {
+        const i = notes.findIndex(n=>n.id===editingNoteId);
+        if (i>-1) {
+          notes[i] = { ...notes[i], ...base, updatedAt: new Date().toISOString() };
+        }
+      } else {
+        notes.unshift({ id: uid(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...base });
+      }
+      writeLS(LS_KEYS.NOTES, notes);
+      renderNotes();
+      closeNote();
+      showNotification('تم حفظ النوت بنجاح.', 'success');
+    });
+
+    // Quick note from Dashboard
+    document.getElementById('btnQuickNote').addEventListener('click', ()=>{
+      editingNoteId = null;
+      noteInputTitle.value = '';
+      noteInputContent.value = '';
+      notePinned.checked = false;
+      noteTitle.textContent = 'نوت سريعة';
+      modalNote.showModal();
+    });
+
+    // ====== Render Notes ======
+    const notesList = document.getElementById('notesList');
+
+    function renderNotes(){
+      notesList.innerHTML='';
+      if (!notes.length) { 
+        notesList.innerHTML = `<div class="empty">لا توجد نوتس بعد</div>`; 
+        return; 
+      }
+      const sorted = [...notes].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0) || new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
+      for (const n of sorted) {
+        const el = document.createElement('div');
+        el.className = 'note' + (n.pinned?' pinned':'');
+        el.innerHTML = `
+          <div class="note-title">${escapeHTML(n.title||'بدون عنوان')}</div>
+          <div class="note-content">${escapeHTML(n.content||'').replace(/\n/g, '<br>')}</div>
+          <div class="note-meta">${new Date(n.updatedAt||n.createdAt).toLocaleString('ar-EG')} ${n.pinned?'📌':''}</div>
+          <div class="note-actions">
+            <button class="btn btn-ghost" data-act="pin" style="font-size: 12px; padding: 6px 10px;">${n.pinned?'إلغاء التثبيت':'تثبيت'}</button>
+            <button class="btn btn-accent" data-act="edit" style="font-size: 12px; padding: 6px 10px;">تعديل</button>
+            <button class="btn btn-danger" data-act="del" style="font-size: 12px; padding: 6px 10px;">حذف</button>
+          </div>
+        `;
+        el.querySelector('[data-act="pin"]').addEventListener('click', ()=>{
+          n.pinned = !n.pinned; 
+          n.updatedAt = new Date().toISOString(); 
+          writeLS(LS_KEYS.NOTES, notes); 
+          renderNotes();
+          showNotification('تم تحديث تثبيت النوت.', 'success');
+        });
+        el.querySelector('[data-act="edit"]').addEventListener('click', ()=> openNote(n.id));
+        el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+          showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه النوت؟', 'تأكيد الحذف', () => {
+            notes = notes.filter(x=>x.id!==n.id); 
+            writeLS(LS_KEYS.NOTES, notes); 
+            renderNotes();
+            showNotification('تم حذف النوت بنجاح.', 'success');
+          });
+        });
+        notesList.appendChild(el);
+      }
+    }
+
+    // ====== Export Data ======
+    function exportData() {
+      const data = {
+        transactions,
+        notes,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finote-backup-${todayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('تم تصدير البيانات بنجاح.', 'success');
+    }
+
+    document.getElementById('btnExportData').addEventListener('click', exportData);
+
+    // ====== Clear All Data ======
+    function clearAllData() {
+      showConfirmationModal('هل أنت متأكد أنك تريد مسح جميع المعاملات والنوتس؟ لا يمكن التراجع عن هذا الإجراء.', 'مسح جميع البيانات', () => {
+        transactions = [];
+        notes = [];
+        writeLS(LS_KEYS.TX, transactions);
+        writeLS(LS_KEYS.NOTES, notes);
+        renderBalance();
+        renderRecent();
+        renderAllTransactions();
+        renderNotes();
+        updateCategoryList();
+        showNotification('تم مسح جميع البيانات بنجاح.', 'success');
+      });
+    }
+    document.getElementById('btnClearAll').addEventListener('click', clearAllData);
+
+
+    // ====== Keyboard Shortcuts ======
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+          case '1':
+            e.preventDefault();
+            openTx('income');
+            break;
+          case '2':
+            e.preventDefault();
+            openTx('expense');
+            break;
+          case '3':
+            e.preventDefault();
+            openNote();
+            break;
+        }
+      }
+    });
+
+    // ====== Utility Functions ======
+    function escapeHTML(str){
+      return (str||'').replace(/[&<>\"']/g, s=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    // ====== Notification System ======
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 1000;
+        padding: 12px 16px; border-radius: 8px; color: white; font-weight: 600;
+        background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+        box-shadow: var(--shadow); animation: slideIn 0.3s ease forwards; /* Added forwards */
+        opacity: 0; /* Start with opacity 0 for animation */
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+    
+    // ====== Custom Confirmation Modal Functions ======
+    let currentConfirmationCallback = null;
+
+    function showConfirmationModal(message, title = 'تأكيد', confirmCallback = () => {}) {
+      document.getElementById('confirmationModalTitle').textContent = title;
+      document.getElementById('confirmationModalMessage').textContent = message;
+      currentConfirmationCallback = confirmCallback;
+      document.getElementById('confirmationModal').showModal();
+    }
+
+    function closeConfirmationModal() {
+      document.getElementById('confirmationModal').close();
+      currentConfirmationCallback = null;
+    }
+
+    document.getElementById('confirmActionBtn').addEventListener('click', () => {
+      if (currentConfirmationCallback) {
+        currentConfirmationCallback();
+      }
+      closeConfirmationModal();
+    });
+
+    document.getElementById('cancelConfirmationBtn').addEventListener('click', () => {
+      closeConfirmationModal();
+    });
+
+
+    // ====== Data validation and cleanup ======
+    function validateAndCleanData() {
+      // Clean up invalid transactions
+      transactions = transactions.filter(t => t.id && t.type && t.amount && !isNaN(+t.amount));
+      
+      // Add missing 'title' field to old transactions if it doesn't exist
+      transactions.forEach(t => {
+        if (!t.title) {
+          t.title = t.type === 'income' ? 'دخل' : 'مصروف'; // Default title for old transactions
+        }
+      });
+
+      // Clean up invalid notes  
+      notes = notes.filter(n => n.id && (n.title || n.content));
+      
+      // Add missing timestamps
+      const now = new Date().toISOString();
+      transactions.forEach(t => {
+        if (!t.createdAt) t.createdAt = t.date ? new Date(t.date).toISOString() : now;
+      });
+      
+      notes.forEach(n => {
+        if (!n.createdAt) n.createdAt = now;
+        if (!n.updatedAt) n.updatedAt = n.createdAt;
+      });
+      
+      // Save cleaned data
+      writeLS(LS_KEYS.TX, transactions);
+      writeLS(LS_KEYS.NOTES, notes);
+    }
+
+    // ====== Initialize App ======
+    function init() {
+      // Validate and clean existing data
+      validateAndCleanData();
+      
+      // Setup filters
+      setupFilters();
+      
+      // Init date default
+      document.getElementById('txDate').valueAsDate = new Date();
+      
+      // Initial renders
+      renderBalance();
+      renderRecent();
+      renderNotes();
+      updateCategoryList();
+      
+      // Reset filters
+      currentFilter = 'all';
+      
+      console.log('Finote initialized successfully!');
+    }
+
+    // Start the app
+    init();
+  </script>
+</body>
+</html>
+
