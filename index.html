@@ -1,898 +1,1819 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Finote – مصاريف + نوتس</title>
-  <style>
-    :root {
-      --bg: #0b0f14;
-      --bg-soft: rgba(255,255,255,0.04);
-      --card: rgba(255,255,255,0.06);
-      --text: #eaf0f6;
-      --muted: #a8b3c7;
-      --primary: #5df2ff;
-      --accent: #8a7dff;
-      --danger: #ff6b6b;
-      --success: #31d0a0;
-      --warning: #ffa726;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --glass: blur(8px) saturate(140%);
-    }
-    /* Light theme */
-    .light {
-      --bg: #f6f8fb;
-      --bg-soft: rgba(0,0,0,0.04);
-      --card: rgba(255,255,255,0.8);
-      --text: #0c1725;
-      --muted: #4a5463;
-      --primary: #0db3c6;
-      --accent: #5b50e6;
-      --danger: #d93636;
-      --success: #2ea574;
-      --warning: #f57c00;
-      --shadow: 0 10px 22px rgba(0,0,0,.10);
-      --glass: blur(6px) saturate(120%);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تخلص منها - Quit It V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Define CSS Variables for theming */
+        :root {
+            --bg-body: #F8F9FA;
+            --bg-container: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --border-light: #e0e0e0;
+            --text-dark: #343A40;
+            --text-medium: #495057;
+            --text-light: #6C757D;
+            --text-extra-light: #ADB5BD;
+            --primary-color: #7B61FF;
+            --primary-hover: #6A51D6;
+            --progress-bg: #E9ECEF;
+            --relapse-bg: #FFC0CB;
+            --relapse-text: #8B0000;
+            --relapse-border: #FF8099;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-card: rgba(0, 0, 0, 0.05);
+            --shadow-primary: rgba(123, 97, 255, 0.2);
+        }
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Kufi Arabic", Tahoma, Arial, sans-serif;
-      background: radial-gradient(1200px 800px at 80% -10%, rgba(93,242,255,.12), transparent 40%),
-                  radial-gradient(900px 700px at -10% 110%, rgba(138,125,255,.12), transparent 40%),
-                  var(--bg);
-      color: var(--text);
-      display: flex; flex-direction: column;
-      min-height: 100vh;
-    }
+        /* Dark Mode styles */
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-container: #1E1E1E;
+            --bg-card: #2C2C2C;
+            --border-light: #333333;
+            --text-dark: #E0E0E0;
+            --text-medium: #B0B0B0;
+            --text-light: #888888;
+            --text-extra-light: #666666;
+            --primary-color: #937BFF; /* Slightly lighter purple for dark mode */
+            --primary-hover: #7E61D6;
+            --progress-bg: #3A3A3A;
+            --relapse-bg: #4A2020;
+            --relapse-text: #FF6B6B;
+            --relapse-border: #803030;
+            --shadow-light: rgba(255, 255, 255, 0.05);
+            --shadow-card: rgba(0, 0, 0, 0.2);
+            --shadow-primary: rgba(147, 123, 255, 0.3);
+        }
 
-    .app {
-      max-width: 480px; margin: 0 auto; width: 100%; min-height: 100vh;
-      display: flex; flex-direction: column; position: relative;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
+            color: var(--text-medium);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .app-container {
+            background-color: var(--bg-container);
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px var(--shadow-light);
+            width: 100%;
+            max-width: 420px;
+            height: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .header {
+            background-color: var(--bg-container);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-light);
+            z-index: 10;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .header-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-extra-light);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .header-btn:hover {
+            color: var(--text-dark);
+        }
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            flex-grow: 1;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .main-content::-webkit-scrollbar {
+            display: none;
+        }
 
-    header {
-      position: sticky; top: 0; z-index: 10;
-      backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
-      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0)) , var(--bg-soft);
-      box-shadow: var(--shadow);
-    }
-    .topbar { display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; }
-    .brand { display:flex; gap:8px; align-items:center; font-weight:700; letter-spacing:.3px; }
-    .logo {
-      width: 34px; height: 34px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      box-shadow: 0 6px 18px rgba(141, 131, 255, .35), inset 0 1px 0 rgba(255,255,255,.25);
-    }
+        /* --- Navigation Bar --- */
+        .navbar {
+            background-color: var(--bg-container);
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0;
+            z-index: 10;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-extra-light);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+        .nav-item:hover {
+            color: var(--text-dark);
+        }
+        .nav-item .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* --- General Card Styles --- */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 5px 15px var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            border: 1px solid var(--border-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    .mode-toggle { border: 0; border-radius: 14px; padding: 10px 12px; cursor: pointer;
-      color: var(--text); background: var(--card); box-shadow: var(--shadow);
-      display:flex; align-items:center; gap:8px; font-weight:600; }
+        /* --- Quote Card --- */
+        .quote-card {
+            /* Use the primary color for the quote card gradient */
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light-variant) 100%);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: 0 5px 15px var(--shadow-primary);
+        }
+        .quote-card .close-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 1; /* Ensure it's above other content */
+        }
+        .quote-card .next-quote-btn {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem; /* Position on the left */
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 1; /* Ensure it's above other content */
+        }
+        .quote-card .quote-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .quote-card .quote-text {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .quote-card .quote-author {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-align: right;
+        }
 
-    main { flex: 1 1 auto; padding: 16px; }
+        /* --- Habit Card in Summary --- */
+        .habit-summary-card {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .habit-summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Keep a subtle shadow on hover */
+        }
+        .habit-summary-card .progress-bar-container {
+            width: 100%;
+            background-color: var(--progress-bg);
+            border-radius: 0.5rem;
+            height: 0.5rem;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+        .habit-summary-card .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 0.5rem;
+            transition: width 0.5s ease-in-out, background-color 0.3s ease;
+        }
 
-    .card { background: var(--card); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
-    .balance { text-align:center; padding: 20px 14px; }
-    .balance .label { color: var(--muted); font-size: 14px; }
-    .balance .value { font-size: 34px; font-weight: 800; letter-spacing: .6px; margin-top: 6px; }
-    .balance .value.negative { color: var(--danger); }
-    .balance .value.positive { color: var(--success); }
+        /* --- Goal View Specific Styles --- */
+        .goal-progress-circle-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 1.5rem auto;
+            transform: rotate(-90deg);
+        }
+        .goal-progress-circle-svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke-width: 15;
+            stroke-linecap: round;
+        }
+        .goal-progress-circle-background {
+            stroke: var(--progress-bg);
+            transition: stroke 0.3s ease;
+        }
+        .goal-progress-circle-progress {
+            stroke: var(--primary-color);
+            transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.3s ease;
+        }
+        .goal-progress-circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            color: var(--text-dark);
+            font-size: 2.5rem;
+            font-weight: 800;
+            transition: color 0.3s ease;
+        }
+        .goal-days-text {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .goal-message {
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            margin-top: -0.5rem;
+            color: var(--text-medium);
+            transition: color 0.3s ease;
+        }
+        .abstinence-timer-goal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-medium);
+            transition: color 0.3s ease;
+        }
+        .abstinence-timer-goal span {
+            font-weight: 400;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            transition: color 0.3s ease;
+        }
+        .goal-countdown-display {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            transition: color 0.3s ease;
+        }
+        .goal-countdown-display span {
+            color: var(--text-medium);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .goal-countdown-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1rem;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+        .goal-countdown-unit strong {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            transition: color 0.3s ease;
+        }
+        .view-goals-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px var(--shadow-primary);
+        }
+        .view-goals-btn:hover {
+            background-color: var(--primary-hover);
+        }
 
-    .balance-toggle {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px;
-      padding: 8px 12px;
-      color: var(--text);
-      cursor: pointer;
-      font-size: 18px;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow);
-    }
-    .balance-toggle:hover {
-      transform: scale(1.1);
-      background: var(--bg-soft);
-    }
-    .balance-toggle:active {
-      transform: scale(0.95);
-    }
+        /* --- Diary View Specific Styles --- */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+        .calendar-day-name {
+            color: var(--text-light);
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .calendar-day {
+            background-color: var(--bg-body); /* Using body bg for calendar days */
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.25rem;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--border-light);
+            color: var(--text-medium);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .calendar-day.disabled {
+            color: var(--text-extra-light);
+            background-color: var(--progress-bg); /* Use progress-bg for disabled days */
+            cursor: not-allowed;
+            border: 1px solid var(--border-light);
+        }
+        .calendar-day.active-day {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 5px var(--shadow-primary);
+            border: none;
+        }
+        .calendar-day.relapse {
+            background-color: var(--relapse-bg);
+            color: var(--relapse-text);
+            border: 1px solid var(--relapse-border);
+        }
+        .calendar-day .relapse-icon {
+            font-size: 1.5rem;
+            margin-top: 0.2rem;
+            color: var(--relapse-text);
+        }
+        /* Style for note indicator */
+        .calendar-day.has-note::after {
+            content: "•"; /* Small dot indicator */
+            position: absolute;
+            bottom: 0.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            line-height: 0.5;
+        }
+        .reset-timer-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px var(--shadow-primary);
+        }
+        .reset-timer-btn:hover {
+            background-color: var(--primary-hover);
+        }
 
-    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
-    .stat-card { background: var(--card); border-radius: 14px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
-    .stat-label { color: var(--muted); font-size: 12px; }
-    .stat-value { font-weight: 700; margin-top: 4px; }
-    .stat-income { color: var(--success); }
-    .stat-expense { color: var(--danger); }
+        /* --- Add/Edit Habit Modal --- */
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .modal-content {
+            animation: fadeInScale 0.3s ease-out;
+            background-color: var(--bg-container);
+            border: 1px solid var(--border-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-light);
+            background-color: var(--progress-bg); /* Use progress-bg for input */
+            color: var(--text-dark);
+            font-size: 1rem;
+            text-align: right;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        .modal-input::placeholder {
+            color: var(--text-extra-light);
+        }
+        .modal-select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-light);
+            background-color: var(--progress-bg);
+            color: var(--text-dark);
+            font-size: 1rem;
+            text-align: right;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236C757D'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 0.75rem center;
+            background-size: 1.5em 1.5em;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        body.dark-mode .modal-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23888888'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); /* Darker arrow for dark mode */
+        }
 
-    .actions { display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
-    .btn { border:0; border-radius: 14px; padding: 12px; font-weight: 700; cursor: pointer; color:#091018; transition: all 0.2s ease; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), #9ff7ff); }
-    .btn-accent  { background: linear-gradient(135deg, var(--accent), #c2bcff); color:#fff; }
-    .btn-danger  { background: linear-gradient(135deg, var(--danger), #ff9a9a); }
-    .btn-ghost   { background: var(--card); color: var(--text); border:1px solid rgba(255,255,255,.08); }
-    .btn.full { grid-column: 1 / -1; }
-
-    .section-title { margin: 18px 4px 10px; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-
-    .tx-list { display:flex; flex-direction:column; gap:8px; }
-    .tx-item { display:flex; justify-content:space-between; align-items:center; background: var(--card); border-radius: 14px; padding: 12px; box-shadow: var(--shadow); cursor: pointer; transition: all 0.2s ease; }
-    .tx-item:hover { transform: translateY(-1px); box-shadow: 0 15px 35px rgba(0,0,0,.4); }
-    .tx-left { display:flex; gap:10px; align-items:center; }
-    .tx-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.08); display:grid; place-items:center; font-weight:800; }
-    .tx-icon.income { background: rgba(49, 208, 160, 0.2); color: var(--success); }
-    .tx-icon.expense { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
-    .tx-title { font-weight:700; }
-    .tx-meta { color: var(--muted); font-size: 12px; }
-    .tx-amount.plus { color: var(--success); font-weight:800; }
-    .tx-amount.minus { color: var(--danger); font-weight:800; }
-
-    /* Filter Controls */
-    .filter-row { display: flex; gap: 8px; margin-bottom: 14px; }
-    .filter-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,.12); background: transparent; color: var(--muted); border-radius: 20px; cursor: pointer; font-size: 12px; }
-    .filter-btn.active { background: var(--primary); color: var(--bg); border-color: var(--primary); }
-
-    /* Notes */
-    .notes-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-    .notes-grid { display:flex; flex-direction:column; gap:10px; }
-    .note { background: var(--card); border-radius: 16px; padding: 12px; box-shadow: var(--shadow); position:relative; transition: all 0.2s ease; }
-    .note:hover { transform: translateY(-1px); box-shadow: 0 15px 35px rgba(0,0,0,.4); }
-    .note.pinned { outline: 2px dashed var(--accent); }
-    .note-title { font-weight:800; margin-bottom:4px; }
-    .note-content { margin: 6px 0; }
-    .note-meta { font-size: 12px; color: var(--muted); }
-    .note-actions { display:flex; gap:8px; margin-top:10px; }
-
-    /* Tabs (bottom nav) */
-    .tabs { position: sticky; bottom: 0; z-index: 10; backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
-            background: linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,0)), var(--bg-soft); box-shadow: var(--shadow); }
-    .tabbar { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; padding: 10px; }
-    .tab-btn { border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; color: var(--text); background: var(--card); transition: all 0.2s ease; }
-    .tab-btn:hover { transform: translateY(-1px); }
-    .tab-btn.active { outline: 2px solid var(--primary); box-shadow: 0 0 0 6px rgba(93,242,255,.12); }
-
-    /* Modal */
-    dialog { width: min(520px, 92vw); border: 0; border-radius: 18px; padding: 0; box-shadow: var(--shadow); background: var(--card); color: var(--text); }
-    dialog::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
-    .modal-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
-    .modal-body { padding:16px; }
-    .modal-actions { display:flex; gap:10px; padding: 0 16px 16px; }
-    .close-x { background: transparent; border:0; color: var(--muted); font-size: 18px; cursor:pointer; }
-
-    label { display:block; font-weight:700; margin: 10px 2px 6px; }
-    input, select, textarea { width:100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: var(--text); }
-    input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); }
-    textarea { min-height: 96px; resize: vertical; }
-
-    .empty { color: var(--muted); text-align: center; padding: 18px; border:1px dashed rgba(255,255,255,.15); border-radius: 14px; }
-
-    /* Delete confirmation */
-    .delete-actions { display: flex; gap: 8px; margin-top: 8px; }
-    .confirm-delete { background: var(--danger); color: white; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
-    .cancel-delete { background: var(--muted); color: white; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
-
-    /* Utilities */
-    .row { display:flex; gap:10px; }
-    .row > * { flex:1; }
-
-    /* Export button */
-    .export-btn { background: var(--accent); color: white; border: 0; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 12px; }
-
-    /* New styles for notification animation */
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-  </style>
+        .modal-button-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px var(--shadow-primary);
+        }
+        .modal-button-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .modal-button-secondary {
+            background-color: var(--text-light); /* Grey for cancel */
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-button-secondary:hover {
+            background-color: #5A6268;
+        }
+        /* Specific override for red button in settings for clear data */
+        #clearAllDataBtn {
+            background-color: #DC3545; /* Red */
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
+        }
+        #clearAllDataBtn:hover {
+            background-color: #C82333; /* Darker red */
+        }
+        /* Color Swatch */
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .color-swatch.selected {
+            border-color: var(--text-dark); /* Highlight selected color */
+        }
+    </style>
 </head>
-<body>
-  <div class="app" id="app">
-    <header>
-      <div class="topbar">
-        <div class="brand"><div class="logo" aria-hidden="true"></div> Finote</div>
-        <button id="modeBtn" class="mode-toggle" aria-label="تبديل الوضع">🌙 / ☀️</button>
-      </div>
-    </header>
-
-    <main>
-      <!-- DASHBOARD TAB -->
-      <section id="tab-dashboard" class="tab" aria-label="لوحة التحكم">
-        <div class="card balance">
-          <div class="label">الرصيد الحالي</div>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-            <div class="value" id="balanceValue">••••• EGP</div>
-            <button class="balance-toggle" id="balanceToggle" aria-label="إظهار/إخفاء الرصيد">👁️</button>
-          </div>
+<body dir="rtl">
+    <div id="app" class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <button id="backBtn" class="header-btn hidden">
+                &lt;
+            </button>
+            <h2 id="headerTitle" class="header-title">ملخص</h2>
+            <button id="addHabitBtn" class="header-btn text-3xl leading-none">
+                +
+            </button>
         </div>
 
-        <div class="stats-row">
-          <div class="stat-card">
-            <div class="stat-label">إجمالي الدخل</div>
-            <div class="stat-value stat-income" id="totalIncome">0 EGP</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">إجمالي المصروفات</div>
-            <div class="stat-value stat-expense" id="totalExpenses">0 EGP</div>
-          </div>
+        <!-- Main Content Area (Dynamically rendered) -->
+        <div id="mainContent" class="main-content">
+            <!-- Content will be rendered here by JavaScript -->
         </div>
 
-        <div class="actions">
-          <button class="btn btn-primary" id="btnIncome">+ دخل</button>
-          <button class="btn btn-danger" id="btnExpense">+ مصروف</button>
-          <button class="btn btn-accent full" id="btnQuickNote">+ نوت سريعة</button>
+        <!-- Navigation Bar -->
+        <div class="navbar">
+            <div id="navOverview" class="nav-item active" data-view="summary">
+                <span class="icon">📝</span>
+                <span>ملخص</span>
+            </div>
+            <div id="navGoals" class="nav-item" data-view="goal">
+                <span class="icon">🎯</span>
+                <span>الهدف</span>
+            </div>
+            <div id="navDiary" class="nav-item" data-view="diary">
+                <span class="icon">📅</span>
+                <span>مفكرة</span>
+            </div>
+            <div id="navSettings" class="nav-item" data-view="settings">
+                <span class="icon">⚙️</span>
+                <span>إعدادات</span>
+            </div>
         </div>
-
-        <div class="section-title">
-          المعاملات الأخيرة
-          <div style="display: flex; gap: 8px;">
-            <button class="export-btn" id="btnExportData">تصدير</button>
-            <button class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" id="btnClearAll">مسح الكل</button>
-          </div>
-        </div>
-        
-        <div class="filter-row">
-          <button class="filter-btn active" data-filter="all">الكل</button>
-          <button class="filter-btn" data-filter="income">دخل</button>
-          <button class="filter-btn" data-filter="expense">مصروف</button>
-          <button class="filter-btn" data-filter="today">اليوم</button>
-        </div>
-        
-        <div id="recentList" class="tx-list"></div>
-      </section>
-
-      <!-- TRANSACTIONS TAB -->
-      <section id="tab-transactions" class="tab" hidden aria-label="جميع المعاملات">
-        <div class="section-title">
-          جميع المعاملات
-          <span id="txCount">0 معاملة</span>
-        </div>
-        <div class="filter-row">
-          <button class="filter-btn active" data-filter="all">الكل</button>
-          <button class="filter-btn" data-filter="income">دخل</button>
-          <button class="filter-btn" data-filter="expense">مصروف</button>
-        </div>
-        <div id="allTransactionsList" class="tx-list"></div>
-      </section>
-
-      <!-- NOTES TAB -->
-      <section id="tab-notes" class="tab" hidden aria-label="النوتس">
-        <div class="notes-head">
-          <h3 style="margin:0">النوتس</h3>
-          <button class="btn btn-primary" id="btnAddNote">+ إضافة نوت</button>
-        </div>
-        <div class="notes-grid" id="notesList"></div>
-      </section>
-    </main>
-
-    <!-- Bottom Tabs -->
-    <nav class="tabs" aria-label="التنقل السفلي">
-      <div class="tabbar">
-        <button class="tab-btn active" data-tab="dashboard">الرئيسية</button>
-        <button class="tab-btn" data-tab="transactions">المعاملات</button>
-        <button class="tab-btn" data-tab="notes">النوتس</button>
-      </div>
-    </nav>
-  </div>
-
-  <!-- Modals -->
-  <dialog id="modalTx">
-    <form method="dialog" id="txForm">
-      <div class="modal-head">
-        <div id="txModalTitle">إضافة معاملة</div> <!-- Changed to div for modal title -->
-        <button class="close-x" type="button" onclick="closeTx()">✕</button>
-      </div>
-      <div class="modal-body">
-        <label>العنوان</label>
-        <input required type="text" id="txTitleInput" placeholder="مثال: راتب، إيجار، طعام" />
-        <div class="row">
-          <div>
-            <label>المبلغ (EGP)</label>
-            <input required type="number" step="0.01" min="0" id="txAmount" />
-          </div>
-          <div>
-            <label>النوع</label>
-            <select id="txType">
-              <option value="income">دخل</option>
-              <option value="expense">مصروف</option>
-            </select>
-          </div>
-        </div>
-        <label>الفئة (اختياري)</label>
-        <input type="text" id="txCategory" placeholder="تفاصيل إضافية: وجبة غداء، فاتورة الكهرباء…" list="categoryList" />
-        <datalist id="categoryList"></datalist>
-        <label>التاريخ</label>
-        <input type="date" id="txDate" />
-        <label>ملاحظة (اختياري)</label>
-        <textarea id="txNote" placeholder="تفاصيل سريعة"></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" type="button" onclick="closeTx()">إلغاء</button>
-        <button class="btn btn-primary" id="txSave" value="default">حفظ</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="modalNote">
-    <form method="dialog" id="noteForm">
-      <div class="modal-head">
-        <div id="noteTitle">نوت جديدة</div>
-        <button class="close-x" type="button" onclick="closeNote()">✕</button>
-      </div>
-      <div class="modal-body">
-        <label>العنوان</label>
-        <input id="noteInputTitle" type="text" placeholder="عنوان النوت" />
-        <label>المحتوى</label>
-        <textarea id="noteInputContent" placeholder="اكتب ملاحظتك هنا"></textarea>
-        <label style="display:flex; align-items:center; gap:8px; margin-top:12px">
-          <input type="checkbox" id="notePinned" style="width:auto" /> تثبيت النوت (Pin)
-        </label>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" type="button" onclick="closeNote()">إلغاء</button>
-        <button class="btn btn-primary" id="noteSave" value="default">حفظ</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Custom Confirmation Modal -->
-  <dialog id="confirmationModal">
-    <div class="modal-head">
-      <div id="confirmationModalTitle">تأكيد</div>
-      <button class="close-x" type="button" onclick="closeConfirmationModal()">✕</button>
     </div>
-    <div class="modal-body">
-      <p id="confirmationModalMessage"></p>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" type="button" id="cancelConfirmationBtn">إلغاء</button>
-      <button class="btn btn-danger" id="confirmActionBtn">تأكيد</button>
-    </div>
-  </dialog>
 
-
-  <script>
-    // ====== Storage Helpers ======
-    const LS_KEYS = {
-      TX: 'finote_transactions_v1',
-      NOTES: 'finote_notes_v1',
-      THEME: 'finote_theme'
-    };
-    const readLS = (k, fallback) => {
-      try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
-    }
-    const writeLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-
-    // ====== State ======
-    let transactions = readLS(LS_KEYS.TX, []);
-    let notes = readLS(LS_KEYS.NOTES, []);
-    let currentFilter = 'all';
-    let balanceVisible = readLS('finote_balance_visible', false);
-
-    // ====== Theme ======
-    const appRoot = document.documentElement; // <html>
-    const savedTheme = readLS(LS_KEYS.THEME, 'dark');
-    if (savedTheme === 'light') appRoot.classList.add('light');
-    const modeBtn = document.getElementById('modeBtn');
-    const applyTheme = () => {
-      const isLight = appRoot.classList.toggle('light');
-      writeLS(LS_KEYS.THEME, isLight ? 'light' : 'dark');
-    };
-    modeBtn.addEventListener('click', applyTheme);
-
-    // ====== Tabs ======
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabs = {
-      dashboard: document.getElementById('tab-dashboard'),
-      transactions: document.getElementById('tab-transactions'),
-      notes: document.getElementById('tab-notes')
-    };
-    tabBtns.forEach(btn => btn.addEventListener('click', () => {
-      tabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const t = btn.dataset.tab;
-      for (const key in tabs) tabs[key].hidden = key !== t;
-      if (t === 'transactions') renderAllTransactions();
-    }));
-
-    // ====== Filter System ======
-    function setupFilters() {
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const parent = btn.closest('section');
-          parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentFilter = btn.dataset.filter;
-          
-          if (parent.id === 'tab-dashboard') {
-            renderRecent();
-          } else if (parent.id === 'tab-transactions') {
-            renderAllTransactions();
-          }
-        });
-      });
-    }
-
-    // ====== Utilities ======
-    const fmt = new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 2 });
-    const todayISO = () => new Date().toISOString().slice(0,10);
-    const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
-
-    function filterTransactions(txList, filter = 'all') {
-      const today = todayISO();
-      switch(filter) {
-        case 'income': return txList.filter(t => t.type === 'income');
-        case 'expense': return txList.filter(t => t.type === 'expense');
-        case 'today': return txList.filter(t => t.date === today);
-        default: return txList;
-      }
-    }
-
-    // ====== Render Balance & Stats ======
-    const balanceEl = document.getElementById('balanceValue');
-    const totalIncomeEl = document.getElementById('totalIncome');
-    const totalExpensesEl = document.getElementById('totalExpenses');
-
-    function calcStats() {
-      let totalIncome = 0, totalExpenses = 0;
-      for (const t of transactions) {
-        if (t.type === 'income') totalIncome += (+t.amount);
-        else totalExpenses += (+t.amount);
-      }
-      const balance = totalIncome - totalExpenses;
-      return { balance, totalIncome, totalExpenses };
-    }
-
-    function renderBalance() {
-      const { balance, totalIncome, totalExpenses } = calcStats();
-      const balanceEl = document.getElementById('balanceValue');
-      const toggleBtn = document.getElementById('balanceToggle');
-      
-      if (balanceVisible) {
-        balanceEl.textContent = `${fmt.format(balance)} EGP`;
-        toggleBtn.textContent = '🙈';
-        toggleBtn.setAttribute('aria-label', 'إخفاء الرصيد');
-      } else {
-        balanceEl.textContent = '••••• EGP';
-        toggleBtn.textContent = '👁️';
-        toggleBtn.setAttribute('aria-label', 'إظهار الرصيد');
-      }
-      
-      balanceEl.className = 'value ' + (balance >= 0 ? 'positive' : 'negative');
-      
-      totalIncomeEl.textContent = `${fmt.format(totalIncome)} EGP`;
-      totalExpensesEl.textContent = `${fmt.format(totalExpenses)} EGP`;
-    }
-
-    // ====== Balance Toggle ======
-    function toggleBalanceVisibility() {
-      balanceVisible = !balanceVisible;
-      writeLS('finote_balance_visible', balanceVisible);
-      renderBalance();
-    }
-
-    document.getElementById('balanceToggle').addEventListener('click', toggleBalanceVisibility);
-
-    // ====== Render Transactions ======
-    const recentList = document.getElementById('recentList');
-    const allTransactionsList = document.getElementById('allTransactionsList');
-    const txCountEl = document.getElementById('txCount');
-
-    function createTransactionElement(t, showDelete = false) {
-      const item = document.createElement('div');
-      item.className = 'tx-item';
-      // Use t.title as the main display title, and t.category/t.note in meta
-      const metaText = [t.category, t.note].filter(Boolean).map(escapeHTML).join(' · ');
-      item.innerHTML = `
-        <div class="tx-left">
-          <div class="tx-icon ${t.type}">${t.type === 'income' ? '+' : '–'}</div>
-          <div>
-            <div class="tx-title">${escapeHTML(t.title)}</div>
-            <div class="tx-meta">${t.date} ${metaText ? ' · ' + metaText : ''}</div>
-          </div>
+    <!-- Custom Modals -->
+    <!-- General Alert/Confirm Modal -->
+    <div id="customModal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="modal-content p-6 rounded-lg shadow-xl max-w-xs w-full text-center">
+            <p id="modalMessage" class="mb-4 text-lg font-semibold" style="color: var(--text-dark);"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="modalConfirmBtn" class="modal-button-primary hidden">تأكيد</button>
+                <button id="modalCancelBtn" class="modal-button-secondary hidden">إلغاء</button>
+                <button id="modalOkBtn" class="modal-button-primary hidden">موافق</button>
+            </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="tx-amount ${t.type==='income'?'plus':'minus'}">${t.type==='income'?'+':'-'}${fmt.format(+t.amount)} EGP</div>
-          ${showDelete ? `<button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" onclick="deleteTransaction('${t.id}')">حذف</button>` : ''}
+    </div>
+
+    <!-- Add/Edit Habit Modal -->
+    <div id="habitModal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="modal-content p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="habitModalTitle" class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">إضافة عادة جديدة</h3>
+            <div class="mb-4 text-right">
+                <label for="habitModalName" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">اسم العادة:</label>
+                <input type="text" id="habitModalName" class="modal-input" placeholder="مثال: التدخين، السهر">
+            </div>
+            <div class="mb-4 text-right flex items-center justify-between">
+                <label for="habitModalIsNoGoal" class="text-sm font-medium" style="color: var(--text-medium);">عادة بدون هدف محدد:</label>
+                <label class="switch">
+                    <input type="checkbox" id="habitModalIsNoGoal">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="mb-4 text-right">
+                <label for="habitModalGoal" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">الهدف (أيام بدون العادة):</label>
+                <input type="number" id="habitModalGoal" class="modal-input" value="7" min="1">
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="habitModalSaveBtn" class="modal-button-primary">حفظ</button>
+                <button id="habitModalCloseBtn" class="modal-button-secondary">إلغاء</button>
+            </div>
         </div>
-      `;
-      return item;
-    }
+    </div>
 
-    function renderRecent() {
-      recentList.innerHTML = '';
-      if (!transactions.length) {
-        recentList.innerHTML = `<div class="empty">لا توجد معاملات بعد</div>`;
-        return;
-      }
-      
-      const filtered = filterTransactions(transactions, currentFilter);
-      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      const last5 = sorted.slice(0, 5);
-      
-      if (!last5.length) {
-        recentList.innerHTML = `<div class="empty">لا توجد معاملات مطابقة للفلتر</div>`;
-        return;
-      }
-      
-      for (const t of last5) {
-        recentList.appendChild(createTransactionElement(t));
-      }
-    }
+    <!-- Edit Specific Habit Modal -->
+    <div id="editHabitDetailModal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="modal-content p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="editHabitDetailModalTitle" class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">تعديل العادة</h3>
+            <div class="mb-4 text-right">
+                <label for="editHabitDetailName" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">اسم العادة:</label>
+                <input type="text" id="editHabitDetailName" class="modal-input">
+            </div>
+            <div class="mb-4 text-right flex items-center justify-between">
+                <label for="editHabitDetailIsNoGoal" class="text-sm font-medium" style="color: var(--text-medium);">عادة بدون هدف محدد:</label>
+                <label class="switch">
+                    <input type="checkbox" id="editHabitDetailIsNoGoal">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="mb-4 text-right">
+                <label for="editHabitDetailGoal" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">الهدف (أيام بدون العادة):</label>
+                <input type="number" id="editHabitDetailGoal" class="modal-input" min="1">
+            </div>
+            <div class="mb-4 text-right">
+                <label for="editHabitDetailStartDate" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">تاريخ البدء:</label>
+                <input type="date" id="editHabitDetailStartDate" class="modal-input">
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="editHabitDetailSaveBtn" class="modal-button-primary">حفظ</button>
+                <button id="editHabitDetailCloseBtn" class="modal-button-secondary">إلغاء</button>
+            </div>
+        </div>
+    </div>
 
-    function renderAllTransactions() {
-      allTransactionsList.innerHTML = '';
-      
-      const filtered = filterTransactions(transactions, currentFilter);
-      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      
-      txCountEl.textContent = `${sorted.length} معاملة`;
-      
-      if (!sorted.length) {
-        allTransactionsList.innerHTML = `<div class="empty">لا توجد معاملات</div>`;
-        return;
-      }
-      
-      for (const t of sorted) {
-        allTransactionsList.appendChild(createTransactionElement(t, true));
-      }
-    }
-
-    // ====== Delete Transaction ======
-    function deleteTransaction(id) {
-      showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه المعاملة؟', 'تأكيد الحذف', () => {
-        transactions = transactions.filter(t => t.id !== id);
-        writeLS(LS_KEYS.TX, transactions);
-        renderBalance();
-        renderRecent();
-        renderAllTransactions();
-        updateCategoryList();
-        showNotification('تم حذف المعاملة بنجاح.', 'success');
-      });
-    }
-
-    // ====== Category Auto-complete ======
-    function updateCategoryList() {
-      const categoryList = document.getElementById('categoryList');
-      const categories = [...new Set(transactions.map(t => t.category).filter(c => c))];
-      categoryList.innerHTML = categories.map(c => `<option value="${escapeHTML(c)}"></option>`).join('');
-    }
-
-    // ====== Transactions Modal ======
-    const modalTx = document.getElementById('modalTx');
-    const txModalTitle = document.getElementById('txModalTitle'); // Changed ID to avoid conflict with input
-    const txTitleInput = document.getElementById('txTitleInput'); // New input for transaction title
-    const txAmount = document.getElementById('txAmount');
-    const txType = document.getElementById('txType');
-    const txCategory = document.getElementById('txCategory');
-    const txDate = document.getElementById('txDate');
-    const txNote = document.getElementById('txNote');
+    <!-- Daily Note Modal -->
+    <div id="dailyNoteModal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="modal-content p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 id="dailyNoteModalTitle" class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">ملاحظات اليوم</h3>
+            <p id="dailyNoteDate" class="text-center text-sm mb-4" style="color: var(--text-medium);"></p>
+            <div class="mb-4 text-right">
+                <label for="dailyNoteText" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">ملاحظتك:</label>
+                <textarea id="dailyNoteText" class="modal-input h-32 resize-none" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <button id="dailyNoteSaveBtn" class="modal-button-primary">حفظ</button>
+                <button id="dailyNoteCloseBtn" class="modal-button-secondary">إلغاء</button>
+            </div>
+        </div>
+    </div>
     
+    <script>
+        const app = document.getElementById('app');
+        const headerTitle = document.getElementById('headerTitle');
+        const mainContent = document.getElementById('mainContent');
+        const backBtn = document.getElementById('backBtn');
+        const addHabitBtn = document.getElementById('addHabitBtn');
 
-    function openTx(type='income') {
-      txModalTitle.textContent = type === 'income' ? 'إضافة دخل' : 'إضافة مصروف';
-      txType.value = type;
-      txTitleInput.value = ''; // Clear new title input
-      txAmount.value = '';
-      txCategory.value = '';
-      txDate.valueAsDate = new Date();
-      txNote.value = '';
-      modalTx.showModal();
-    }
-    function closeTx(){ modalTx.close(); }
+        // Navigation elements
+        const navOverview = document.getElementById('navOverview');
+        const navGoals = document.getElementById('navGoals');
+        const navDiary = document.getElementById('navDiary');
+        const navSettings = document.getElementById('navSettings');
 
-    document.getElementById('btnIncome').addEventListener('click', ()=> openTx('income'));
-    document.getElementById('btnExpense').addEventListener('click', ()=> openTx('expense'));
+        // Custom Modal Elements
+        const customModal = document.getElementById('customModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalOkBtn = document.getElementById('modalOkBtn');
 
-    document.getElementById('txForm').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const amt = parseFloat(txAmount.value||'0');
-      if (!(amt>0)) {
-        showNotification('من فضلك أدخل مبلغ صحيح.', 'danger');
-        return;
-      }
-      if (!txTitleInput.value.trim()) {
-        showNotification('من فضلك أدخل عنوان المعاملة.', 'danger');
-        return;
-      }
-      const t = {
-        id: uid(),
-        title: txTitleInput.value.trim(), // New title field
-        type: txType.value,
-        amount: amt,
-        category: txCategory.value.trim(),
-        date: txDate.value || todayISO(),
-        note: txNote.value.trim(),
-        createdAt: new Date().toISOString()
-      };
-      transactions.push(t);
-      writeLS(LS_KEYS.TX, transactions);
-      renderBalance();
-      renderRecent();
-      updateCategoryList();
-      closeTx();
-      showNotification('تم حفظ المعاملة بنجاح.', 'success');
-    });
+        // Habit Add/Edit Modal Elements
+        const habitModal = document.getElementById('habitModal');
+        const habitModalTitle = document.getElementById('habitModalTitle');
+        const habitModalName = document.getElementById('habitModalName');
+        const habitModalGoal = document.getElementById('habitModalGoal');
+        const habitModalIsNoGoal = document.getElementById('habitModalIsNoGoal'); // New checkbox
+        const habitModalSaveBtn = document.getElementById('habitModalSaveBtn');
+        const habitModalCloseBtn = document.getElementById('habitModalCloseBtn');
 
-    // ====== Notes Modal ======
-    const modalNote = document.getElementById('modalNote');
-    const noteInputTitle = document.getElementById('noteInputTitle');
-    const noteInputContent = document.getElementById('noteInputContent');
-    const notePinned = document.getElementById('notePinned');
-    const noteTitle = document.getElementById('noteTitle');
+        // Edit Specific Habit Modal Elements
+        const editHabitDetailModal = document.getElementById('editHabitDetailModal');
+        const editHabitDetailModalTitle = document.getElementById('editHabitDetailModalTitle');
+        const editHabitDetailName = document.getElementById('editHabitDetailName');
+        const editHabitDetailGoal = document.getElementById('editHabitDetailGoal');
+        const editHabitDetailIsNoGoal = document.getElementById('editHabitDetailIsNoGoal'); // New checkbox
+        const editHabitDetailStartDate = document.getElementById('editHabitDetailStartDate');
+        const editHabitDetailSaveBtn = document.getElementById('editHabitDetailSaveBtn');
+        const editHabitDetailCloseBtn = document.getElementById('editHabitDetailCloseBtn');
 
-    let editingNoteId = null;
+        // Daily Note Modal Elements
+        const dailyNoteModal = document.getElementById('dailyNoteModal');
+        const dailyNoteModalTitle = document.getElementById('dailyNoteModalTitle');
+        const dailyNoteDate = document.getElementById('dailyNoteDate');
+        const dailyNoteText = document.getElementById('dailyNoteText');
+        const dailyNoteSaveBtn = document.getElementById('dailyNoteSaveBtn');
+        const dailyNoteCloseBtn = document.getElementById('dailyNoteCloseBtn');
 
-    function openNote(editId=null) {
-      editingNoteId = editId;
-      if (editId) {
-        const n = notes.find(n=>n.id===editId);
-        if (!n) return;
-        noteTitle.textContent = 'تعديل نوت';
-        noteInputTitle.value = n.title || '';
-        noteInputContent.value = n.content || '';
-        notePinned.checked = !!n.pinned;
-      } else {
-        noteTitle.textContent = 'نوت جديدة';
-        noteInputTitle.value = '';
-        noteInputContent.value = '';
-        notePinned.checked = false;
-      }
-      modalNote.showModal();
-    }
-    function closeNote(){ modalNote.close(); editingNoteId=null; }
 
-    document.getElementById('btnAddNote').addEventListener('click', ()=> openNote());
+        // Global app state
+        let appState = {
+            currentView: 'summary', // 'summary', 'goal', 'diary', 'addEditHabit', 'settings'
+            habits: [], // Array of habit objects
+            selectedHabitId: null, // ID of the habit currently being viewed in 'goal' or 'diary'
+            quoteDismissed: false, // To keep the quote dismissed across sessions
+            darkMode: false, // New state for dark mode
+            primaryColor: '#7B61FF', // Default primary color
+            selectedHabitForEdit: null, // Stores the habit object being edited
+            selectedDateForNote: null, // Stores the date for which a note is being added/edited
+        };
 
-    document.getElementById('noteForm').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const base = {
-        title: (noteInputTitle.value||'').trim(),
-        content: (noteInputContent.value||'').trim(),
-        pinned: !!notePinned.checked
-      };
-      
-      if (!base.title && !base.content) {
-        showNotification('من فضلك أدخل عنوان أو محتوى للنوت.', 'danger');
-        return;
-      }
-      
-      if (editingNoteId) {
-        const i = notes.findIndex(n=>n.id===editingNoteId);
-        if (i>-1) {
-          notes[i] = { ...notes[i], ...base, updatedAt: new Date().toISOString() };
+        // Available primary colors for selection
+        const availableColors = ['#7B61FF', '#FF6B6B', '#28C76F', '#FFC107', '#17A2B8']; // Purple, Red, Green, Yellow, Cyan
+
+        // Dynamic quotes for summary view
+        const motivationalQuotes = [
+            { text: "أفضل مخرج هو دائمًا من خلال.", author: "روبرت فروست" },
+            { text: "السر للحصول على المضي قدمًا هو البدء.", author: "مارك توين" },
+            { text: "صدق أنك تستطيع وأنت في منتصف الطريق.", author: "ثيودور روزفلت" },
+            { text: "أبداً لا تستسلم للأشياء التي تؤمن بها حقاً.", author: "وينستون تشرشل" },
+            { text: "الرحلة التي تستغرق ألف ميل تبدأ بخطوة واحدة.", author: "لاو تسو" },
+            { text: "لكي تنجح، يجب أن تكون رغبتك في النجاح أكبر من خوفك من الفشل.", author: "بيل كوسبي" }
+        ];
+
+        // Global timer intervals
+        let summaryUpdateInterval = null;
+        let goalCountdownInterval = null;
+
+        // --- Utility Functions ---
+
+        /**
+         * Shows a custom alert or confirmation modal to the user.
+         * @param {string} message - The message to display in the modal.
+         * @param {'alert'|'confirm'} type - The type of modal ('alert' or 'confirm').
+         * @returns {Promise<boolean>} - Resolves to true if 'alert' or 'confirm' (user confirmed), false if 'confirm' (user cancelled).
+         */
+        function showCustomModal(message, type = 'alert') {
+            return new Promise(resolve => {
+                modalMessage.textContent = message;
+
+                // Reset button visibility
+                modalConfirmBtn.classList.add('hidden');
+                modalCancelBtn.classList.add('hidden');
+                modalOkBtn.classList.add('hidden');
+
+                if (type === 'alert') {
+                    modalOkBtn.classList.remove('hidden');
+                    modalOkBtn.onclick = () => {
+                        customModal.classList.add('hidden');
+                        resolve(true); // Resolve for alert so flow continues
+                    };
+                } else if (type === 'confirm') {
+                    modalConfirmBtn.classList.remove('hidden');
+                    modalCancelBtn.classList.remove('hidden');
+                    modalConfirmBtn.onclick = () => {
+                        customModal.classList.add('hidden');
+                        resolve(true); // User confirmed
+                    };
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.add('hidden');
+                        resolve(false); // User cancelled
+                    };
+                }
+                customModal.classList.remove('hidden');
+            });
         }
-      } else {
-        notes.unshift({ id: uid(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...base });
-      }
-      writeLS(LS_KEYS.NOTES, notes);
-      renderNotes();
-      closeNote();
-      showNotification('تم حفظ النوت بنجاح.', 'success');
-    });
 
-    // Quick note from Dashboard
-    document.getElementById('btnQuickNote').addEventListener('click', ()=>{
-      editingNoteId = null;
-      noteInputTitle.value = '';
-      noteInputContent.value = '';
-      notePinned.checked = false;
-      noteTitle.textContent = 'نوت سريعة';
-      modalNote.showModal();
-    });
-
-    // ====== Render Notes ======
-    const notesList = document.getElementById('notesList');
-
-    function renderNotes(){
-      notesList.innerHTML='';
-      if (!notes.length) { 
-        notesList.innerHTML = `<div class="empty">لا توجد نوتس بعد</div>`; 
-        return; 
-      }
-      const sorted = [...notes].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0) || new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
-      for (const n of sorted) {
-        const el = document.createElement('div');
-        el.className = 'note' + (n.pinned?' pinned':'');
-        el.innerHTML = `
-          <div class="note-title">${escapeHTML(n.title||'بدون عنوان')}</div>
-          <div class="note-content">${escapeHTML(n.content||'').replace(/\n/g, '<br>')}</div>
-          <div class="note-meta">${new Date(n.updatedAt||n.createdAt).toLocaleString('ar-EG')} ${n.pinned?'📌':''}</div>
-          <div class="note-actions">
-            <button class="btn btn-ghost" data-act="pin" style="font-size: 12px; padding: 6px 10px;">${n.pinned?'إلغاء التثبيت':'تثبيت'}</button>
-            <button class="btn btn-accent" data-act="edit" style="font-size: 12px; padding: 6px 10px;">تعديل</button>
-            <button class="btn btn-danger" data-act="del" style="font-size: 12px; padding: 6px 10px;">حذف</button>
-          </div>
-        `;
-        el.querySelector('[data-act="pin"]').addEventListener('click', ()=>{
-          n.pinned = !n.pinned; 
-          n.updatedAt = new Date().toISOString(); 
-          writeLS(LS_KEYS.NOTES, notes); 
-          renderNotes();
-          showNotification('تم تحديث تثبيت النوت.', 'success');
-        });
-        el.querySelector('[data-act="edit"]').addEventListener('click', ()=> openNote(n.id));
-        el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
-          showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه النوت؟', 'تأكيد الحذف', () => {
-            notes = notes.filter(x=>x.id!==n.id); 
-            writeLS(LS_KEYS.NOTES, notes); 
-            renderNotes();
-            showNotification('تم حذف النوت بنجاح.', 'success');
-          });
-        });
-        notesList.appendChild(el);
-      }
-    }
-
-    // ====== Export Data ======
-    function exportData() {
-      const data = {
-        transactions,
-        notes,
-        exportDate: new Date().toISOString(),
-        version: '1.0'
-      };
-      
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `finote-backup-${todayISO()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showNotification('تم تصدير البيانات بنجاح.', 'success');
-    }
-
-    document.getElementById('btnExportData').addEventListener('click', exportData);
-
-    // ====== Clear All Data ======
-    function clearAllData() {
-      showConfirmationModal('هل أنت متأكد أنك تريد مسح جميع المعاملات والنوتس؟ لا يمكن التراجع عن هذا الإجراء.', 'مسح جميع البيانات', () => {
-        transactions = [];
-        notes = [];
-        writeLS(LS_KEYS.TX, transactions);
-        writeLS(LS_KEYS.NOTES, notes);
-        renderBalance();
-        renderRecent();
-        renderAllTransactions();
-        renderNotes();
-        updateCategoryList();
-        showNotification('تم مسح جميع البيانات بنجاح.', 'success');
-      });
-    }
-    document.getElementById('btnClearAll').addEventListener('click', clearAllData);
-
-
-    // ====== Keyboard Shortcuts ======
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch(e.key) {
-          case '1':
-            e.preventDefault();
-            openTx('income');
-            break;
-          case '2':
-            e.preventDefault();
-            openTx('expense');
-            break;
-          case '3':
-            e.preventDefault();
-            openNote();
-            break;
+        // Save appState to localStorage
+        function saveState() {
+            localStorage.setItem('quitItAppState', JSON.stringify(appState));
         }
-      }
-    });
 
-    // ====== Utility Functions ======
-    function escapeHTML(str){
-      return (str||'').replace(/[&<>\"']/g, s=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
-    }
-
-    // ====== Notification System ======
-    function showNotification(message, type = 'success') {
-      const notification = document.createElement('div');
-      notification.style.cssText = `
-        position: fixed; top: 20px; right: 20px; z-index: 1000;
-        padding: 12px 16px; border-radius: 8px; color: white; font-weight: 600;
-        background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
-        box-shadow: var(--shadow); animation: slideIn 0.3s ease forwards; /* Added forwards */
-        opacity: 0; /* Start with opacity 0 for animation */
-      `;
-      notification.textContent = message;
-      
-      document.body.appendChild(notification);
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
-    }
-    
-    // ====== Custom Confirmation Modal Functions ======
-    let currentConfirmationCallback = null;
-
-    function showConfirmationModal(message, title = 'تأكيد', confirmCallback = () => {}) {
-      document.getElementById('confirmationModalTitle').textContent = title;
-      document.getElementById('confirmationModalMessage').textContent = message;
-      currentConfirmationCallback = confirmCallback;
-      document.getElementById('confirmationModal').showModal();
-    }
-
-    function closeConfirmationModal() {
-      document.getElementById('confirmationModal').close();
-      currentConfirmationCallback = null;
-    }
-
-    document.getElementById('confirmActionBtn').addEventListener('click', () => {
-      if (currentConfirmationCallback) {
-        currentConfirmationCallback();
-      }
-      closeConfirmationModal();
-    });
-
-    document.getElementById('cancelConfirmationBtn').addEventListener('click', () => {
-      closeConfirmationModal();
-    });
-
-
-    // ====== Data validation and cleanup ======
-    function validateAndCleanData() {
-      // Clean up invalid transactions
-      transactions = transactions.filter(t => t.id && t.type && t.amount && !isNaN(+t.amount));
-      
-      // Add missing 'title' field to old transactions if it doesn't exist
-      transactions.forEach(t => {
-        if (!t.title) {
-          t.title = t.type === 'income' ? 'دخل' : 'مصروف'; // Default title for old transactions
+        // Load appState from localStorage
+        function loadState() {
+            const storedState = localStorage.getItem('quitItAppState');
+            if (storedState) {
+                const parsedState = JSON.parse(storedState);
+                // Ensure dates are parsed correctly
+                parsedState.habits.forEach(habit => {
+                    if (habit.quitStartDate) {
+                        habit.quitStartDate = new Date(habit.quitStartDate);
+                    }
+                    if (habit.relapseDates) {
+                        habit.relapseDates = habit.relapseDates.map(dateStr => new Date(dateStr));
+                    }
+                    // Simplified dailyNotes initialization
+                    if (!habit.dailyNotes) {
+                        habit.dailyNotes = {}; // Initialize if not present
+                    }
+                    // Initialize is_open_ended if not present (for old habits)
+                    if (typeof habit.is_open_ended === 'undefined') {
+                        habit.is_open_ended = false;
+                    }
+                });
+                appState = { ...appState, ...parsedState };
+            }
         }
-      });
 
-      // Clean up invalid notes  
-      notes = notes.filter(n => n.id && (n.title || n.content));
-      
-      // Add missing timestamps
-      const now = new Date().toISOString();
-      transactions.forEach(t => {
-        if (!t.createdAt) t.createdAt = t.date ? new Date(t.date).toISOString() : now;
-      });
-      
-      notes.forEach(n => {
-        if (!n.createdAt) n.createdAt = now;
-        if (!n.updatedAt) n.updatedAt = n.createdAt;
-      });
-      
-      // Save cleaned data
-      writeLS(LS_KEYS.TX, transactions);
-      writeLS(LS_KEYS.NOTES, notes);
-    }
+        /**
+         * Applies or removes the 'dark-mode' class to the body element
+         * and re-applies the primary color to ensure correct theming.
+         */
+        function applyDarkMode() {
+            if (appState.darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            applyPrimaryColor(appState.primaryColor); // Re-apply primary color in case dark mode changes it
+        }
 
-    // ====== Initialize App ======
-    function init() {
-      // Validate and clean existing data
-      validateAndCleanData();
-      
-      // Setup filters
-      setupFilters();
-      
-      // Init date default
-      document.getElementById('txDate').valueAsDate = new Date();
-      
-      // Initial renders
-      renderBalance();
-      renderRecent();
-      renderNotes();
-      updateCategoryList();
-      
-      // Reset filters
-      currentFilter = 'all';
-      
-      console.log('Finote initialized successfully!');
-    }
+        /**
+         * Adjusts the lightness of a hexadecimal color.
+         * @param {string} hex - The hexadecimal color string (e.g., "#RRGGBB").
+         * @param {number} lum - The lightness factor (-1 for darker, 0 for no change, 1 for lighter).
+         * @returns {string} The adjusted hexadecimal color string.
+         */
+        function adjustColor(hex, lum) {
+            // Validate hex string
+            hex = String(hex).replace(/[^0-9a-f]/gi, '');
+            if (hex.length < 6) {
+                hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+            }
+            lum = lum || 0;
 
-    // Start the app
-    init();
-  </script>
+            // Convert to decimal and change lightness
+            let rgb = "#", c, i;
+            for (i = 0; i < 3; i++) {
+                c = parseInt(hex.substr(i*2,2), 16);
+                c = Math.round(Math.min(255, Math.max(0, c + (c * lum))));
+                rgb += ("00"+c.toString(16)).substr(c.toString(16).length);
+            }
+            return rgb;
+        }
+
+        /**
+         * Applies the selected primary color to CSS variables for dynamic theming.
+         * Also calculates a lighter variant for gradients.
+         * @param {string} color - The hexadecimal color string to set as primary.
+         */
+        function applyPrimaryColor(color) {
+            document.documentElement.style.setProperty('--primary-color', color);
+            // Calculate a lighter/darker variant for the gradient on quote card
+            let lightVariant;
+            if (appState.darkMode) {
+                lightVariant = adjustColor(color, 0.2); // Make it slightly lighter for dark mode gradients
+            } else {
+                lightVariant = adjustColor(color, 0.1); // Make it slightly lighter for light mode gradients
+            }
+            document.documentElement.style.setProperty('--primary-light-variant', lightVariant);
+        }
+
+
+        // Calculate time difference
+        function getTimeDifference(startDate) {
+            const now = new Date();
+            const distance = now.getTime() - startDate.getTime();
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            return { days, hours, minutes, seconds, totalMilliseconds: distance };
+        }
+
+        // Format time for display
+        function formatTime(days, hours, minutes, seconds) {
+            return `${String(days).padStart(2, '0')} أيام, ${String(hours).padStart(2, '0')} ساعات, ${String(minutes).padStart(2, '0')} دقائق, ${String(seconds).padStart(2, '0')} ثواني`;
+        }
+        
+        // Format date to YYYY-MM-DD string
+        function formatDateToYYYYMMDD(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // --- Update Functions for Timers (without re-rendering entire view) ---
+
+        function updateSummaryTimersDisplay() {
+            // Only update if current view is summary
+            if (appState.currentView !== 'summary') return;
+
+            appState.habits.forEach(habit => {
+                const habitCard = mainContent.querySelector(`.habit-summary-card[data-habit-id="${habit.id}"]`);
+                if (habitCard && habit.quitStartDate) {
+                    const timeDiff = getTimeDifference(habit.quitStartDate);
+                    
+                    const timeTextElement = habitCard.querySelector('p:first-of-type'); // Assuming the first paragraph is the time
+                    if (timeTextElement) {
+                        timeTextElement.textContent = `وقت الامتناع: ${formatTime(timeDiff.days, timeDiff.hours, timeDiff.minutes, timeDiff.seconds)}`;
+                    }
+
+                    const progressBar = habitCard.querySelector('.progress-bar');
+                    const progressTextElement = habitCard.querySelector('p:last-of-type'); // Assuming last paragraph is progress text
+                    const goalDaysSpan = habitCard.querySelector('span:last-of-type'); // Assuming the span for goal days
+
+                    if (habit.is_open_ended) {
+                        if (progressBar) progressBar.style.width = '0%'; // Hide or remove progress bar for open-ended
+                        if (progressTextElement) progressTextElement.textContent = 'تتبع مستمر';
+                        if (goalDaysSpan) goalDaysSpan.textContent = 'هدف مفتوح';
+                    } else {
+                        const progress = habit.goalDays > 0 ? Math.min(100, (timeDiff.days / habit.goalDays) * 100) : 0;
+                        if (progressBar) progressBar.style.width = `${progress}%`;
+                        if (progressTextElement) progressTextElement.textContent = `${progress.toFixed(0)}% من الهدف الحالي`;
+                        if (goalDaysSpan) goalDaysSpan.textContent = `${habit.goalDays} أيام هدف`;
+                    }
+                }
+            });
+        }
+
+        function updateGoalCountdownDisplay() {
+            // Only update if current view is goal
+            if (appState.currentView !== 'goal') return;
+
+            const selectedHabit = appState.habits.find(h => h.id === appState.selectedHabitId);
+            if (!selectedHabit || !selectedHabit.quitStartDate) {
+                if (goalCountdownInterval) {
+                    clearInterval(goalCountdownInterval);
+                    goalCountdownInterval = null;
+                }
+                return; // Nothing to update if no habit or start date
+            }
+
+            const goalCountdownElement = document.getElementById('goalCountdown');
+            const longestStreakElement = document.getElementById('longestStreakValue');
+            const relapseCountElement = document.getElementById('relapseCountValue');
+            const progressBarCircle = document.querySelector('.goal-progress-circle-progress');
+            const progressText = document.querySelector('.goal-progress-circle-text');
+            const goalDaysText = document.querySelector('.goal-days-text');
+            const abstinenceTimeDisplay = document.getElementById('abstinenceTimeDisplay');
+
+            // Clear interval if essential elements are missing (e.g., view changed)
+            if (!goalCountdownElement || !progressBarCircle || !progressText || !goalDaysText) {
+                if (goalCountdownInterval) {
+                    clearInterval(goalCountdownInterval);
+                    goalCountdownInterval = null;
+                }
+                return;
+            }
+
+            const timeDiff = getTimeDifference(selectedHabit.quitStartDate);
+
+            // Update longest streak display
+            if (longestStreakElement) {
+                longestStreakElement.textContent = String(selectedHabit.longestStreakDays);
+            }
+            // Update relapse count display
+            if (relapseCountElement) {
+                relapseCountElement.textContent = String(selectedHabit.relapseDates.length);
+            }
+            if(abstinenceTimeDisplay) abstinenceTimeDisplay.textContent = formatTime(timeDiff.days, timeDiff.hours, timeDiff.minutes, timeDiff.seconds);
+
+            if (selectedHabit.is_open_ended) {
+                // For open-ended habits, hide countdown and show a simplified progress
+                goalCountdownElement.innerHTML = `<p style="color: var(--text-dark);" class="text-lg">تتبع مستمر، لا يوجد هدف محدد.</p>`;
+                
+                // For circular progress, just show current days or 0%
+                const radius = 80;
+                const circumference = 2 * Math.PI * radius;
+                progressBarCircle.style.strokeDashoffset = circumference; // Full circle but no progress fill
+                progressText.textContent = `0%`; // Or just hide it
+                goalDaysText.textContent = `${timeDiff.days} أيام (تتبع)`; // Show current days
+            } else {
+                const targetDate = new Date(selectedHabit.quitStartDate.getTime() + selectedHabit.goalDays * 24 * 60 * 60 * 1000);
+                const remainingTime = targetDate.getTime() - new Date().getTime();
+
+                if (remainingTime < 0) {
+                    goalCountdownElement.innerHTML = `<p style="color: var(--text-dark);" class="text-lg">تم تحقيق الهدف!</p>`;
+                    progressBarCircle.style.strokeDashoffset = 0; // Full circle
+                    progressText.textContent = `100%`;
+                    goalDaysText.textContent = `${selectedHabit.goalDays} أيام`; // Show goal days when achieved
+                    if (goalCountdownInterval) {
+                        clearInterval(goalCountdownInterval);
+                        goalCountdownInterval = null;
+                    }
+                    return;
+                }
+
+                const rDays = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                const rHours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const rMinutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const rSeconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                goalCountdownElement.innerHTML = `
+                    <div class="goal-countdown-unit"><strong>${String(rDays).padStart(2, '0')}</strong> أيام</div>
+                    <div class="goal-countdown-unit"><strong>${String(rHours).padStart(2, '0')}</strong> ساعات</div>
+                    <div class="goal-countdown-unit"><strong>${String(rMinutes).padStart(2, '0')}</strong> دقائق</div>
+                    <div class="goal-countdown-unit"><strong>${String(rSeconds).padStart(2, '0')}</strong> ثواني</div>
+                `;
+                
+                // Also update the circular progress bar percentage and days
+                const progressPercentage = selectedHabit.goalDays > 0 ? Math.min(100, (timeDiff.days / selectedHabit.goalDays) * 100) : 0;
+                const radius = 80;
+                const circumference = 2 * Math.PI * radius;
+                const dashoffset = circumference - (progressPercentage / 100) * circumference;
+
+                progressBarCircle.style.strokeDashoffset = dashoffset;
+                progressText.textContent = `${progressPercentage.toFixed(0)}%`;
+                goalDaysText.textContent = `${timeDiff.days} أيام`;
+            }
+        }
+
+
+        // --- Render Views ---
+
+        // Render Summary View
+        function renderSummaryView() {
+            headerTitle.textContent = 'ملخص';
+            backBtn.classList.add('hidden');
+            addHabitBtn.classList.remove('hidden');
+            mainContent.innerHTML = ''; // Clear previous content
+
+            // Clear goal countdown interval if coming from goal view
+            if (goalCountdownInterval) {
+                clearInterval(goalCountdownInterval);
+                goalCountdownInterval = null;
+            }
+
+            // Function to get and update a random quote
+            const updateRandomQuote = () => {
+                const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+                const quoteTextElement = document.getElementById('quoteText');
+                const quoteAuthorElement = document.getElementById('quoteAuthor');
+                if (quoteTextElement && quoteAuthorElement) {
+                    quoteTextElement.textContent = `"${randomQuote.text}"`;
+                    quoteAuthorElement.textContent = `- ${randomQuote.author}`;
+                }
+            };
+
+            // Quote of the day (only if not dismissed)
+            if (!appState.quoteDismissed) {
+                const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+                const quoteCard = document.createElement('div');
+                quoteCard.className = 'quote-card';
+                quoteCard.innerHTML = `
+                    <button class="close-btn" id="dismissQuoteBtn">x</button>
+                    <button class="next-quote-btn" id="nextQuoteBtn">🔁</button>
+                    <span class="quote-icon">💡</span>
+                    <p class="quote-text" id="quoteText">"${randomQuote.text}"</p>
+                    <p class="quote-author" id="quoteAuthor">- ${randomQuote.author}</p>
+                `;
+                mainContent.appendChild(quoteCard);
+
+                // Event listener for dismissing the quote card
+                document.getElementById('dismissQuoteBtn').onclick = () => {
+                    appState.quoteDismissed = true;
+                    saveState();
+                    renderSummaryView();
+                };
+
+                // Event listener for getting a new random quote
+                document.getElementById('nextQuoteBtn').onclick = updateRandomQuote;
+            }
+
+            // Habits list
+            if (appState.habits.length === 0) {
+                const noHabitsMessage = document.createElement('p');
+                noHabitsMessage.className = 'text-center mt-8'; 
+                noHabitsMessage.style.color = 'var(--text-light)';
+                noHabitsMessage.textContent = 'لم تبدأ بتتبع أي عادة بعد. اضغط على "+" لإضافة عادة جديدة.';
+                mainContent.appendChild(noHabitsMessage);
+            } else {
+                appState.habits.forEach(habit => {
+                    const habitCard = document.createElement('div');
+                    habitCard.className = 'card habit-summary-card';
+                    habitCard.dataset.habitId = habit.id;
+                    habitCard.onclick = () => {
+                        appState.selectedHabitId = habit.id;
+                        appState.currentView = 'goal';
+                        renderApp();
+                    };
+
+                    const timeDiff = habit.quitStartDate ? getTimeDifference(habit.quitStartDate) : { days: 0, hours: 0, minutes: 0, seconds: 0 };
+                    const progress = habit.is_open_ended ? 0 : (habit.goalDays > 0 ? Math.min(100, (timeDiff.days / habit.goalDays) * 100) : 0);
+
+                    habitCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-lg font-bold" style="color: var(--text-dark);">${habit.name}</h4>
+                            <span class="text-sm" style="color: var(--text-light);">
+                                ${habit.is_open_ended ? 'هدف مفتوح' : `${habit.goalDays} أيام هدف`}
+                            </span>
+                        </div>
+                        <p class="text-sm" style="color: var(--text-medium);">وقت الامتناع: ${formatTime(timeDiff.days, timeDiff.hours, timeDiff.minutes, timeDiff.seconds)}</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${progress}%;"></div>
+                        </div>
+                        <p class="text-sm text-left" style="color: var(--text-medium);">
+                            ${habit.is_open_ended ? 'تتبع مستمر' : `${progress.toFixed(0)}% من الهدف الحالي`}
+                        </p>
+                    `;
+                    mainContent.appendChild(habitCard);
+                });
+            }
+            // Start summary timers update
+            if (summaryUpdateInterval) clearInterval(summaryUpdateInterval);
+            summaryUpdateInterval = setInterval(updateSummaryTimersDisplay, 1000);
+            updateSummaryTimersDisplay(); // Initial call
+        }
+
+        // Render Goal View
+        function renderGoalView() {
+            const selectedHabit = appState.habits.find(h => h.id === appState.selectedHabitId);
+            if (!selectedHabit) {
+                appState.currentView = 'summary';
+                renderApp();
+                return;
+            }
+
+            headerTitle.textContent = 'هدفي: ' + selectedHabit.name;
+            backBtn.classList.remove('hidden');
+            addHabitBtn.classList.add('hidden'); // Hide add button in detailed views
+            mainContent.innerHTML = '';
+
+            // Clear summary timers interval if coming from summary view
+            if (summaryUpdateInterval) {
+                clearInterval(summaryUpdateInterval);
+                summaryUpdateInterval = null;
+            }
+
+            const timeDiff = selectedHabit.quitStartDate ? getTimeDifference(selectedHabit.quitStartDate) : { days: 0, hours: 0, minutes: 0, seconds: 0, totalMilliseconds: 0 };
+            const progressPercentage = selectedHabit.is_open_ended ? 0 : (selectedHabit.goalDays > 0 ? Math.min(100, (timeDiff.days / selectedHabit.goalDays) * 100) : 0);
+
+            // Circular progress bar
+            const radius = 80;
+            const circumference = 2 * Math.PI * radius;
+            const dashoffset = circumference - (progressPercentage / 100) * circumference;
+
+            const goalViewHtml = `
+                <div class="card">
+                    <h3 class="text-xl font-bold text-center mb-4" style="color: var(--text-dark);">الهدف الحالي</h3>
+                    <div class="goal-progress-circle-container">
+                        <svg class="goal-progress-circle-svg">
+                            <circle cx="90" cy="90" r="${radius}" class="goal-progress-circle-background"></circle>
+                            <circle cx="90" cy="90" r="${radius}" class="goal-progress-circle-progress"
+                                style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${dashoffset};"></circle>
+                        </svg>
+                        <span class="goal-progress-circle-text">${selectedHabit.is_open_ended ? '0%' : progressPercentage.toFixed(0) + '%'}</span>
+                        <span class="goal-days-text">${selectedHabit.is_open_ended ? `${timeDiff.days} أيام` : `${timeDiff.days} أيام`}</span>
+                    </div>
+                    <p class="goal-message">أستطيع تحقيق أي شيء!</p>
+                    <div class="abstinence-timer-goal text-center mt-4">
+                        وقت الامتناع منذ آخر إعادة تعيين:
+                        <p class="text-xl font-bold" id="abstinenceTimeDisplay" style="color: var(--text-dark);">${formatTime(timeDiff.days, timeDiff.hours, timeDiff.minutes, timeDiff.seconds)}</p>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="text-sm mb-2" style="color: var(--text-light);">
+                            ${selectedHabit.is_open_ended ? 'تتبع مستمر، لا يوجد هدف محدد.' : 'الوقت المتبقي حتى تحقيق الهدف:'}
+                        </p>
+                        <div id="goalCountdown" class="goal-countdown-display">
+                            <!-- Countdown will be updated by timer -->
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6 text-center">
+                    <div class="card p-4 flex flex-col items-center">
+                        <p class="text-sm" style="color: var(--text-light);">أطول فترة امتناع</p>
+                        <p class="text-2xl font-bold text-indigo-600 mt-1"><span id="longestStreakValue">${selectedHabit.longestStreakDays}</span> <span>أيام</span></p>
+                    </div>
+                    <div class="card p-4 flex flex-col items-center">
+                        <p class="text-sm" style="color: var(--text-light);">عدد الانتكاسات</p>
+                        <p class="text-2xl font-bold text-purple-600 mt-1"><span id="relapseCountValue">${selectedHabit.relapseDates.length}</span> <span>مرات</span></p>
+                    </div>
+                </div>
+                <button class="view-goals-btn mt-4" id="relapseInGoalViewBtn">كسرت العادة اليوم</button>
+                <button class="view-goals-btn mt-2 bg-gray-600 hover:bg-gray-700" id="viewGoalsBtn">عرض الأهداف</button>
+            `;
+            mainContent.innerHTML = goalViewHtml;
+
+            // Start goal countdown update
+            if (goalCountdownInterval) clearInterval(goalCountdownInterval);
+            goalCountdownInterval = setInterval(updateGoalCountdownDisplay, 1000);
+            updateGoalCountdownDisplay(); // Initial call
+
+            document.getElementById('viewGoalsBtn').onclick = () => showCustomModal('ميزة "عرض الأهداف" قيد التطوير!', 'alert');
+            
+            document.getElementById('relapseInGoalViewBtn').onclick = async () => {
+                const confirmed = await showCustomModal(`هل أنت متأكد أنك كسرت عادة "${selectedHabit.name}" اليوم؟ سيتم إعادة تعيين العداد.`, 'confirm');
+                if (confirmed) {
+                    // Capture current streak days BEFORE resetting quitStartDate
+                    const currentStreakDays = selectedHabit.quitStartDate ? getTimeDifference(selectedHabit.quitStartDate).days : 0;
+                    
+                    // Update longest streak only if current streak was longer than previous longest
+                    if (currentStreakDays > selectedHabit.longestStreakDays) {
+                        selectedHabit.longestStreakDays = currentStreakDays;
+                    }
+
+                    const relapseDate = new Date();
+                    selectedHabit.relapseDates.push(relapseDate.toISOString()); // Store as ISO string
+                    selectedHabit.quitStartDate = relapseDate; // Reset start date
+                    
+                    saveState();
+                    await showCustomModal(`لقد كسرت العادة "${selectedHabit.name}" اليوم. سيبدأ العد من جديد!`, 'alert');
+                    renderGoalView(); // Re-render to update timers and UI
+                }
+            };
+        }
+
+        // Render Diary View
+        function renderDiaryView() {
+            // If no habit is selected, or no habits exist, redirect to summary
+            if (appState.habits.length === 0) {
+                showCustomModal('الرجاء إضافة عادة أولاً لمراجعة المفكرة.', 'alert');
+                appState.currentView = 'summary';
+                renderApp();
+                return;
+            }
+            if (!appState.selectedHabitId) {
+                appState.selectedHabitId = appState.habits[0].id; // Default to the first habit if none selected
+            }
+
+            const selectedHabit = appState.habits.find(h => h.id === appState.selectedHabitId);
+            if (!selectedHabit) { // Should not happen if previous checks are robust
+                appState.currentView = 'summary';
+                renderApp();
+                return;
+            }
+
+            headerTitle.textContent = 'مفكرة: ' + selectedHabit.name;
+            backBtn.classList.remove('hidden');
+            addHabitBtn.classList.add('hidden');
+            mainContent.innerHTML = '';
+
+            // Clear any active intervals
+            if (summaryUpdateInterval) clearInterval(summaryUpdateInterval);
+            if (goalCountdownInterval) clearInterval(goalCountdownInterval);
+            summaryUpdateInterval = null;
+            goalCountdownInterval = null;
+
+            const timeDiff = selectedHabit.quitStartDate ? getTimeDifference(selectedHabit.quitStartDate) : { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+
+            const today = new Date();
+            let currentCalendarMonth = today.getMonth();
+            let currentCalendarYear = today.getFullYear();
+
+            const renderCalendar = (year, month) => {
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                const numDays = lastDayOfMonth.getDate();
+                const startDay = firstDayOfMonth.getDay(); // 0 for Sunday (in JS), 1 for Monday...
+
+                const monthNames = ["يناير", "يناير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+                const dayNames = ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+
+                let calendarHtml = `
+                    <div class="card mb-4 text-center">
+                        <p class="text-sm" style="color: var(--text-light);">فترة الامتناع الحالية:</p>
+                        <p class="text-xl font-bold" id="currentAbstinenceStreak" style="color: var(--primary-color);">
+                            ${timeDiff.days} أيام
+                        </p>
+                        <p class="text-sm mt-2" style="color: var(--text-light);">أطول فترة امتناع:</p>
+                        <p class="text-lg font-bold" id="longestAbstinenceStreak" style="color: var(--text-dark);">
+                            ${selectedHabit.longestStreakDays} أيام
+                        </p>
+                    </div>
+                    <div class="calendar-header">
+                        <button class="header-btn" id="prevMonthBtn">&lt;</button>
+                        <span>${monthNames[month]} ${year}</span>
+                        <button class="header-btn" id="nextMonthBtn">&gt;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        ${dayNames.map(name => `<span class="calendar-day-name">${name}</span>`).join('')}
+                `;
+
+                // Empty cells for days before the 1st of the month
+                for (let i = 0; i < startDay; i++) {
+                    calendarHtml += `<div class="calendar-day disabled"></div>`;
+                }
+
+                // Days of the month
+                for (let day = 1; day <= numDays; day++) {
+                    const date = new Date(year, month, day);
+                    const isToday = date.toDateString() === today.toDateString();
+                    // Relapse dates are stored as ISO strings, convert them back to Date objects for comparison
+                    const isRelapseDay = selectedHabit.relapseDates.some(relapseDateStr => {
+                        const rDate = new Date(relapseDateStr);
+                        return rDate.getFullYear() === year && 
+                               rDate.getMonth() === month && 
+                               rDate.getDate() === day;
+                    });
+                    const dateKey = formatDateToYYYYMMDD(date);
+                    const hasNote = selectedHabit.dailyNotes && selectedHabit.dailyNotes[dateKey];
+
+
+                    let dayClasses = 'calendar-day';
+                    if (isToday) dayClasses += ' active-day';
+                    if (isRelapseDay) dayClasses += ' relapse';
+                    if (hasNote) dayClasses += ' has-note';
+
+
+                    calendarHtml += `
+                        <div class="${dayClasses}" data-date="${date.toISOString()}" data-date-key="${dateKey}">
+                            ${day}
+                            ${isRelapseDay ? '<span class="relapse-icon">💔</span>' : ''}
+                        </div>
+                    `;
+                }
+                calendarHtml += `</div>`;
+                mainContent.innerHTML = `
+                    ${calendarHtml}
+                    <button class="reset-timer-btn mt-4" id="diaryResetTimerBtn">إعادة تعيين العداد</button>
+                    <button class="view-goals-btn mt-2 bg-gray-600 hover:bg-gray-700" id="viewDiaryBtn">عرض السجل</button>
+                `;
+
+                document.getElementById('prevMonthBtn').onclick = () => {
+                    currentCalendarMonth--;
+                    if (currentCalendarMonth < 0) {
+                        currentCalendarMonth = 11;
+                        currentCalendarYear--;
+                    }
+                    renderCalendar(currentCalendarYear, currentCalendarMonth);
+                };
+
+                document.getElementById('nextMonthBtn').onclick = () => {
+                    currentCalendarMonth++;
+                    if (currentCalendarMonth > 11) {
+                        currentCalendarMonth = 0;
+                        currentCalendarYear++;
+                    }
+                    renderCalendar(currentCalendarYear, currentCalendarMonth);
+                };
+
+                // Add event listeners for daily notes
+                document.querySelectorAll('.calendar-day:not(.disabled)').forEach(dayElement => {
+                    dayElement.onclick = (event) => {
+                        const dateKey = event.currentTarget.dataset.dateKey;
+                        appState.selectedDateForNote = dateKey; // Set selected date for the note modal
+                        
+                        const date = new Date(dateKey + 'T00:00:00'); // Ensure date is correctly parsed
+                        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                        dailyNoteDate.textContent = date.toLocaleDateString('ar-EG', options);
+
+                        // Load existing note or clear for new one
+                        dailyNoteText.value = selectedHabit.dailyNotes[dateKey] || '';
+                        dailyNoteModal.classList.remove('hidden');
+                    };
+                });
+            };
+
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+
+            document.getElementById('diaryResetTimerBtn').onclick = async () => {
+                const confirmed = await showCustomModal(`هل أنت متأكد أنك تريد إعادة تعيين العداد لعادة "${selectedHabit.name}"؟`, 'confirm');
+                if (confirmed) {
+                    // When resetting from the diary, also update longest streak if current streak is higher
+                    const currentStreakDays = selectedHabit.quitStartDate ? getTimeDifference(selectedHabit.quitStartDate).days : 0;
+                    if (currentStreakDays > selectedHabit.longestStreakDays) {
+                        selectedHabit.longestStreakDays = currentStreakDays;
+                    }
+
+                    selectedHabit.quitStartDate = new Date();
+                    selectedHabit.relapseDates = []; // Clear relapse history for this habit
+                    selectedHabit.dailyNotes = {}; // Clear daily notes for this habit
+                    
+                    saveState();
+                    await showCustomModal(`تمت إعادة تعيين عداد "${selectedHabit.name}".`, 'alert');
+                    renderDiaryView(); // Re-render calendar
+                }
+            };
+            document.getElementById('viewDiaryBtn').onclick = () => showCustomModal('ميزة "عرض السجل" قيد التطوير!', 'alert');
+        }
+
+        // Render Settings View (Placeholder)
+        function renderSettingsView() {
+            headerTitle.textContent = 'إعدادات';
+            backBtn.classList.remove('hidden');
+            addHabitBtn.classList.add('hidden');
+            mainContent.innerHTML = `
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-4" style="color: var(--text-dark);">الإعدادات العامة</h3>
+                    <p class="mb-4" style="color: var(--text-medium);">هنا يمكنك تخصيص إعدادات التطبيق.</p>
+                    
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center justify-between mb-4 pb-4 border-b" style="border-color: var(--border-light);">
+                        <span style="color: var(--text-medium);">الوضع الداكن:</span>
+                        <label class="switch">
+                            <input type="checkbox" id="darkModeToggle" ${appState.darkMode ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <!-- Primary Color Selector -->
+                    <div class="mb-4 pb-4 border-b" style="border-color: var(--border-light);">
+                        <span class="block text-sm font-medium mb-2" style="color: var(--text-medium);">لون التمييز الأساسي:</span>
+                        <div id="colorPicker" class="flex flex-wrap gap-2">
+                            ${availableColors.map(color => `
+                                <div class="color-swatch ${appState.primaryColor === color ? 'selected' : ''}" style="background-color: ${color};" data-color="${color}"></div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings (Placeholder) -->
+                    <h3 class="text-xl font-bold mb-4 mt-6" style="color: var(--text-dark);">إعدادات الإشعارات</h3>
+                    <div class="flex items-center justify-between mb-4 pb-4 border-b" style="border-color: var(--border-light);">
+                        <span style="color: var(--text-medium);">تفعيل الإشعارات:</span>
+                        <label class="switch">
+                            <input type="checkbox" id="notificationToggle" disabled> <!-- Disabled for now -->
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="mb-4 pb-4 border-b" style="border-color: var(--border-light);">
+                        <label for="reminderTime" class="block text-sm font-medium mb-1" style="color: var(--text-medium);">وقت التذكير اليومي (قيد التطوير):</label>
+                        <input type="time" id="reminderTime" class="modal-input" value="09:00" disabled>
+                    </div>
+
+
+                    <!-- Manage Habits Section -->
+                    <h3 class="text-xl font-bold mb-4 mt-6" style="color: var(--text-dark);">إدارة العادات</h3>
+                    <div id="manageHabitsList" class="flex flex-col gap-2 mb-4">
+                        ${appState.habits.length === 0 ? `<p class="text-sm" style="color: var(--text-light);">لا توجد عادات لإدارتها.</p>` : 
+                            appState.habits.map(habit => `
+                                <div class="flex items-center justify-between card p-3 border" style="border-color: var(--border-light);">
+                                    <span class="font-medium" style="color: var(--text-medium);">${habit.name}</span>
+                                    <div>
+                                        <button class="text-blue-500 hover:text-blue-700 mr-3 edit-habit-btn" data-habit-id="${habit.id}">تعديل</button>
+                                        <button class="text-red-500 hover:text-red-700 delete-habit-btn" data-habit-id="${habit.id}">حذف</button>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                    
+                    <!-- Clear All Data Button -->
+                    <button id="clearAllDataBtn" class="modal-button-primary mt-4 bg-red-500 hover:bg-red-600">مسح جميع البيانات</button>
+                </div>
+                <style>
+                    /* Toggle Switch CSS */
+                    .switch {
+                        position: relative;
+                        display: inline-block;
+                        width: 60px;
+                        height: 34px;
+                    }
+
+                    .switch input { 
+                        opacity: 0;
+                        width: 0;
+                        height: 0;
+                    }
+
+                    .slider {
+                        position: absolute;
+                        cursor: pointer;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: #ccc;
+                        -webkit-transition: .4s;
+                        transition: .4s;
+                    }
+
+                    .slider:before {
+                        position: absolute;
+                        content: "";
+                        height: 26px;
+                        width: 26px;
+                        left: 4px;
+                        bottom: 4px;
+                        background-color: white;
+                        -webkit-transition: .4s;
+                        transition: .4s;
+                    }
+
+                    input:checked + .slider {
+                        background-color: var(--primary-color);
+                    }
+
+                    input:focus + .slider {
+                        box-shadow: 0 0 1px var(--primary-color);
+                    }
+
+                    input:checked + .slider:before {
+                        -webkit-transform: translateX(26px);
+                        -ms-transform: translateX(26px);
+                        transform: translateX(26px);
+                    }
+
+                    /* Rounded sliders */
+                    .slider.round {
+                        border-radius: 34px;
+                    }
+
+                    .slider.round:before {
+                        border-radius: 50%;
+                    }
+                    /* Dark mode specific switch styling */
+                    body.dark-mode .slider {
+                        background-color: #555;
+                    }
+                    body.dark-mode input:checked + .slider {
+                        background-color: var(--primary-color);
+                    }
+                </style>
+            `;
+            // Clear any active intervals
+            if (summaryUpdateInterval) clearInterval(summaryUpdateInterval);
+            if (goalCountdownInterval) clearInterval(goalCountdownInterval);
+            summaryUpdateInterval = null;
+            goalCountdownInterval = null;
+
+            document.getElementById('clearAllDataBtn').onclick = async () => {
+                const confirmed = await showCustomModal('هل أنت متأكد أنك تريد مسح جميع بيانات التطبيق؟ لا يمكن التراجع عن هذا الإجراء.', 'confirm');
+                if (confirmed) {
+                    localStorage.removeItem('quitItAppState');
+                    appState = {
+                        currentView: 'summary',
+                        habits: [],
+                        selectedHabitId: null,
+                        quoteDismissed: false,
+                        darkMode: false, // Reset dark mode on clear data
+                        primaryColor: '#7B61FF', // Reset primary color
+                    };
+                    applyDarkMode(); // Apply default light mode
+                    applyPrimaryColor(appState.primaryColor); // Apply default primary color
+                    await showCustomModal('تم مسح جميع بيانات التطبيق!', 'alert');
+                    renderApp();
+                }
+            };
+
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            darkModeToggle.onchange = () => {
+                appState.darkMode = darkModeToggle.checked;
+                applyDarkMode();
+                saveState(); // Save the dark mode setting
+                // No need to re-render the entire app, just the theme should change via CSS vars
+            };
+
+            // Color picker functionality
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.onclick = () => {
+                    const newColor = swatch.dataset.color;
+                    appState.primaryColor = newColor;
+                    applyPrimaryColor(newColor);
+                    saveState();
+                    // Update selected visual state
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                    swatch.classList.add('selected');
+                };
+            });
+
+            // Edit habit buttons
+            document.querySelectorAll('.edit-habit-btn').forEach(button => {
+                button.onclick = (event) => {
+                    const habitId = parseInt(event.target.dataset.habitId);
+                    const habitToEdit = appState.habits.find(h => h.id === habitId);
+                    if (habitToEdit) {
+                        appState.selectedHabitForEdit = habitToEdit;
+                        editHabitDetailModalTitle.textContent = `تعديل العادة: ${habitToEdit.name}`; // Set dynamic title
+                        editHabitDetailName.value = habitToEdit.name;
+                        editHabitDetailGoal.value = habitToEdit.goalDays;
+                        editHabitDetailIsNoGoal.checked = habitToEdit.is_open_ended; // Set checkbox state
+                        editHabitDetailGoal.disabled = habitToEdit.is_open_ended; // Disable if open-ended
+                        editHabitDetailStartDate.value = habitToEdit.quitStartDate ? habitToEdit.quitStartDate.toISOString().split('T')[0] : '';
+                        editHabitDetailModal.classList.remove('hidden');
+                    }
+                };
+            });
+
+            // Delete habit buttons
+            document.querySelectorAll('.delete-habit-btn').forEach(button => {
+                button.onclick = async (event) => {
+                    const habitId = parseInt(event.target.dataset.habitId);
+                    const habitToDelete = appState.habits.find(h => h.id === habitId);
+                    if (habitToDelete) {
+                        const confirmed = await showCustomModal(`هل أنت متأكد أنك تريد حذف عادة "${habitToDelete.name}"؟ لا يمكن التراجع عن هذا الإجراء.`, 'confirm');
+                        if (confirmed) {
+                            appState.habits = appState.habits.filter(h => h.id !== habitId);
+                            if (appState.selectedHabitId === habitId) {
+                                appState.selectedHabitId = null; // Deselect if deleted
+                            }
+                            saveState();
+                            await showCustomModal(`تم حذف عادة "${habitToDelete.name}".`, 'alert');
+                            renderSettingsView(); // Re-render settings to update habit list
+                        }
+                    }
+                };
+            });
+        }
+
+        // --- Event Listeners for Add Habit Modal ---
+        habitModalIsNoGoal.onchange = () => {
+            habitModalGoal.disabled = habitModalIsNoGoal.checked;
+            if (habitModalIsNoGoal.checked) {
+                habitModalGoal.value = 0; // Set goal to 0 when open-ended
+            } else {
+                habitModalGoal.value = 7; // Default goal if not open-ended
+            }
+        };
+
+        // --- Event Listeners for Edit Habit Detail Modal ---
+        editHabitDetailIsNoGoal.onchange = () => {
+            editHabitDetailGoal.disabled = editHabitDetailIsNoGoal.checked;
+            if (editHabitDetailIsNoGoal.checked) {
+                editHabitDetailGoal.value = 0; // Set goal to 0 when open-ended
+            } else if (appState.selectedHabitForEdit && appState.selectedHabitForEdit.goalDays === 0) {
+                 editHabitDetailGoal.value = 7; // Default if it was previously open-ended
+            } else if (appState.selectedHabitForEdit) {
+                 editHabitDetailGoal.value = appState.selectedHabitForEdit.goalDays; // Restore previous goal if not open-ended
+            }
+        };
+
+        editHabitDetailCloseBtn.onclick = () => {
+            editHabitDetailModal.classList.add('hidden');
+            appState.selectedHabitForEdit = null;
+        };
+
+        editHabitDetailSaveBtn.onclick = async () => {
+            if (!appState.selectedHabitForEdit) return;
+
+            const updatedName = editHabitDetailName.value.trim();
+            const updatedIsNoGoal = editHabitDetailIsNoGoal.checked;
+            let updatedGoalDays = parseInt(editHabitDetailGoal.value);
+            const updatedStartDateStr = editHabitDetailStartDate.value;
+            const updatedStartDate = updatedStartDateStr ? new Date(updatedStartDateStr + 'T00:00:00') : null; // Ensure UTC date for consistency
+
+            if (updatedName === '') {
+                await showCustomModal('الرجاء إدخال اسم العادة.', 'alert');
+                return;
+            }
+            if (!updatedIsNoGoal && (isNaN(updatedGoalDays) || updatedGoalDays <= 0)) {
+                await showCustomModal('الرجاء إدخال هدف صحيح (عدد أيام أكبر من 0) أو تحديد "عادة بدون هدف محدد".', 'alert');
+                return;
+            }
+            if (updatedIsNoGoal) { // If it's open-ended, force goalDays to 0
+                updatedGoalDays = 0;
+            }
+            if (!updatedStartDate) {
+                 await showCustomModal('الرجاء إدخال تاريخ بدء صحيح.', 'alert');
+                return;
+            }
+
+            // Find the habit in the array and update its properties
+            const habitIndex = appState.habits.findIndex(h => h.id === appState.selectedHabitForEdit.id);
+            if (habitIndex !== -1) {
+                appState.habits[habitIndex].name = updatedName;
+                appState.habits[habitIndex].goalDays = updatedGoalDays;
+                appState.habits[habitIndex].is_open_ended = updatedIsNoGoal; // Save new property
+                appState.habits[habitIndex].quitStartDate = updatedStartDate;
+                saveState();
+                editHabitDetailModal.classList.add('hidden');
+                await showCustomModal(`تم تحديث عادة "${updatedName}" بنجاح!`, 'alert');
+                renderSettingsView(); // Re-render settings view to reflect changes
+                if (appState.selectedHabitId === appState.habits[habitIndex].id) {
+                    // If the edited habit is currently selected, re-render its current view
+                    renderApp(); 
+                }
+            }
+             appState.selectedHabitForEdit = null; // Clear selected habit after saving
+        };
+
+        // --- Daily Note Modal Event Listeners ---
+        dailyNoteCloseBtn.onclick = () => {
+            dailyNoteModal.classList.add('hidden');
+            appState.selectedDateForNote = null;
+        };
+
+        dailyNoteSaveBtn.onclick = async () => {
+            const selectedHabit = appState.habits.find(h => h.id === appState.selectedHabitId);
+            if (!selectedHabit || !appState.selectedDateForNote) return;
+
+            const noteContent = dailyNoteText.value.trim();
+            if (!selectedHabit.dailyNotes) {
+                selectedHabit.dailyNotes = {}; // Ensure notes object exists
+            }
+
+            if (noteContent) {
+                selectedHabit.dailyNotes[appState.selectedDateForNote] = noteContent;
+            } else {
+                delete selectedHabit.dailyNotes[appState.selectedDateForNote]; // Remove note if empty
+            }
+            
+            saveState();
+            dailyNoteModal.classList.add('hidden');
+            await showCustomModal('تم حفظ الملاحظة!', 'alert');
+            renderDiaryView(); // Re-render diary to show note indicator
+            appState.selectedDateForNote = null;
+        };
+
+
+        // --- Core App Rendering ---
+        function renderApp() {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            // Add active class to current view nav item
+            const activeNav = document.querySelector(`[data-view="${appState.currentView}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+
+            // Render specific view
+            switch (appState.currentView) {
+                case 'summary':
+                    renderSummaryView();
+                    break;
+                case 'goal':
+                    renderGoalView();
+                    break;
+                case 'diary':
+                    renderDiaryView();
+                    break;
+                case 'settings':
+                    renderSettingsView();
+                    break;
+                // Add more cases for other views
+                default:
+                    renderSummaryView();
+            }
+            saveState(); // Save state after rendering
+        }
+
+        // --- Event Listeners ---
+
+        // Navigation
+        navOverview.onclick = () => { appState.currentView = 'summary'; renderApp(); };
+        navGoals.onclick = () => { 
+            if (appState.habits.length === 0) {
+                showCustomModal('الرجاء إضافة عادة أولاً لتعيين الأهداف.', 'alert');
+                return;
+            }
+            if (!appState.selectedHabitId && appState.habits.length > 0) {
+                 appState.selectedHabitId = appState.habits[0].id; // Select first habit if none selected
+            } else if (appState.habits.length === 0) { // This case is already handled by the first if
+                showCustomModal('الرجاء إضافة عادة أولاً لتعيين الأهداف.', 'alert');
+                return;
+            }
+            appState.currentView = 'goal'; 
+            renderApp(); 
+        };
+        navDiary.onclick = () => { 
+            // If no habits exist, prompt user and don't navigate
+            if (appState.habits.length === 0) {
+                showCustomModal('الرجاء إضافة عادة أولاً لمراجعة المفكرة.', 'alert');
+                return;
+            }
+            // If no habit is selected, default to the first one for diary view
+            if (!appState.selectedHabitId && appState.habits.length > 0) {
+                appState.selectedHabitId = appState.habits[0].id;
+            }
+            appState.currentView = 'diary'; 
+            renderApp(); 
+        };
+        navSettings.onclick = () => { appState.currentView = 'settings'; renderApp(); };
+
+
+        backBtn.onclick = () => {
+            if (appState.currentView === 'goal' || appState.currentView === 'diary' || appState.currentView === 'settings') {
+                appState.currentView = 'summary';
+                appState.selectedHabitId = null; // Deselect habit
+                renderApp();
+            }
+        };
+
+        addHabitBtn.onclick = () => {
+            habitModalTitle.textContent = 'إضافة عادة جديدة';
+            habitModalName.value = '';
+            habitModalGoal.value = '7'; // Default goal
+            habitModalIsNoGoal.checked = false; // Default to not open-ended
+            habitModalGoal.disabled = false; // Enable goal input
+            habitModal.classList.remove('hidden');
+        };
+
+        habitModalCloseBtn.onclick = () => {
+            habitModal.classList.add('hidden');
+        };
+
+        habitModalSaveBtn.onclick = async () => {
+            const name = habitModalName.value.trim();
+            const isNoGoal = habitModalIsNoGoal.checked;
+            let goalDays = parseInt(habitModalGoal.value);
+
+            if (name === '') {
+                await showCustomModal('الرجاء إدخال اسم العادة.', 'alert');
+                return;
+            }
+            if (!isNoGoal && (isNaN(goalDays) || goalDays <= 0)) {
+                await showCustomModal('الرجاء إدخال هدف صحيح (عدد أيام أكبر من 0) أو تحديد "عادة بدون هدف محدد".', 'alert');
+                return;
+            }
+            if (isNoGoal) { // If it's open-ended, force goalDays to 0
+                goalDays = 0;
+            }
+
+            const newHabit = {
+                id: Date.now(),
+                name: name,
+                quitStartDate: new Date(), // Start tracking immediately
+                goalDays: goalDays,
+                relapseDates: [],
+                longestStreakDays: 0,
+                dailyNotes: {}, // Initialize daily notes
+                is_open_ended: isNoGoal, // Save the new property
+            };
+            appState.habits.push(newHabit);
+            appState.selectedHabitId = newHabit.id; // Select the new habit
+            habitModal.classList.add('hidden');
+            await showCustomModal(`تمت إضافة عادة "${name}" بنجاح!`, 'alert');
+            appState.currentView = 'goal'; // Go to goal view for the new habit
+            renderApp();
+        };
+
+        // --- Initialize App ---
+        loadState(); // Load saved state
+        applyDarkMode(); // Apply dark mode preference on load
+        applyPrimaryColor(appState.primaryColor); // Apply saved primary color
+        renderApp(); // Initial render
+    </script>
 </body>
 </html>
-
