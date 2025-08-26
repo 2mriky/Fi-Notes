@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Finote – مصاريف + نوتس</title>
+  <title data-lang-key="appTitle">Finote – مصاريف + نوتس</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     :root {
       --bg: #0b0f14;
@@ -12,10 +13,10 @@
       --text: #eaf0f6;
       --muted: #a8b3c7;
       --primary: #5df2ff;
-      --accent: #8a7dff;
+      --accent: #8a7dff; /* Accent color for general highlights (e.g., in light mode, primary button gradient) */
       --danger: #ff6b6b;
       --success: #31d0a0;
-      --warning: #ffa726;
+      --warning: #ffa726; /* Warning color for savings */
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --glass: blur(8px) saturate(140%);
     }
@@ -27,10 +28,10 @@
       --text: #0c1725;
       --muted: #4a5463;
       --primary: #0db3c6;
-      --accent: #5b50e6;
+      --accent: #5b50e6; /* Accent color for general highlights (e.g., in light mode, primary button gradient) */
       --danger: #d93636;
       --success: #2ea574;
-      --warning: #f57c00;
+      --warning: #f57c00; /* Warning color for savings */
       --shadow: 0 10px 22px rgba(0,0,0,.10);
       --glass: blur(6px) saturate(120%);
     }
@@ -67,9 +68,14 @@
       box-shadow: 0 6px 18px rgba(141, 131, 255, .35), inset 0 1px 0 rgba(255,255,255,.25);
     }
 
-    .mode-toggle { border: 0; border-radius: 14px; padding: 10px 12px; cursor: pointer;
+    .mode-toggle, .lang-toggle, .passwords-toggle { border: 0; border-radius: 14px; padding: 10px 12px; cursor: pointer;
       color: var(--text); background: var(--card); box-shadow: var(--shadow);
       display:flex; align-items:center; gap:8px; font-weight:600; }
+    
+    .header-actions {
+        display: flex;
+        gap: 8px; /* Spacing between mode and lang toggle */
+    }
 
     main { flex: 1 1 auto; padding: 16px; }
 
@@ -79,6 +85,9 @@
     .balance .value { font-size: 34px; font-weight: 800; letter-spacing: .6px; margin-top: 6px; }
     .balance .value.negative { color: var(--danger); }
     .balance .value.positive { color: var(--success); }
+    /* Change savings value color to warning */
+    .balance .value.savings { color: var(--warning); } 
+
 
     .balance-toggle {
       background: var(--card);
@@ -105,15 +114,54 @@
     .stat-value { font-weight: 700; margin-top: 4px; }
     .stat-income { color: var(--success); }
     .stat-expense { color: var(--danger); }
+    /* Keeping this stat-savings as accent as it's separate from the main savings display */
+    .stat-savings { color: var(--accent); } 
 
-    .actions { display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+
+    /* Actions grid to ensure all 4 buttons are same size */
+    .actions { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); /* Two columns, equal width */
+      gap: 10px; 
+      margin-top: 14px; 
+    }
+    /* Ensure all direct button children of .actions have the same size */
+    .actions > .btn {
+      width: 100%;
+      height: 100%; /* Ensure consistent height */
+      display: flex; /* Use flex to center content if needed */
+      justify-content: center;
+      align-items: center;
+      min-height: 48px; /* A minimum height for better touch targets */
+    }
+    .actions .btn.full { 
+      grid-column: 1 / -1; /* Full width for 'نوت سريعة' */
+      height: auto; /* Allow auto height for full-width button */
+    }
+
     .btn { border:0; border-radius: 14px; padding: 12px; font-weight: 700; cursor: pointer; color:#091018; transition: all 0.2s ease; }
     .btn:hover { transform: translateY(-1px); }
     .btn-primary { background: linear-gradient(135deg, var(--primary), #9ff7ff); }
     .btn-accent  { background: linear-gradient(135deg, var(--accent), #c2bcff); color:#fff; }
     .btn-danger  { background: linear-gradient(135deg, var(--danger), #ff9a9a); }
+    .btn-warning { background: linear-gradient(135deg, var(--warning), #ffcd8a); }
     .btn-ghost   { background: var(--card); color: var(--text); border:1px solid rgba(255,255,255,.08); }
-    .btn.full { grid-column: 1 / -1; }
+    
+    /* New glass button style */
+    .btn-glass {
+        backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+        background: var(--bg-soft); /* Using bg-soft for the glass effect background */
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 14px;
+        padding: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow);
+    }
+    .btn-glass:hover { transform: translateY(-1px); }
+
 
     .section-title { margin: 18px 4px 10px; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
 
@@ -124,15 +172,35 @@
     .tx-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.08); display:grid; place-items:center; font-weight:800; }
     .tx-icon.income { background: rgba(49, 208, 160, 0.2); color: var(--success); }
     .tx-icon.expense { background: rgba(255, 107, 107, 0.2); color: var(--danger); }
+    /* Change savings transaction icons to use warning color */
+    .tx-icon.addToSavings, .tx-icon.withdrawFromSavings { background: rgba(255, 167, 38, 0.2); color: var(--warning); }
+
+
     .tx-title { font-weight:700; }
     .tx-meta { color: var(--muted); font-size: 12px; }
     .tx-amount.plus { color: var(--success); font-weight:800; }
     .tx-amount.minus { color: var(--danger); font-weight:800; }
+    /* Change savings amounts to warning color */
+    .tx-amount.savings-plus, .tx-amount.savings-minus { color: var(--warning); font-weight:800; }
 
-    /* Filter Controls */
-    .filter-row { display: flex; gap: 8px; margin-bottom: 14px; }
+
+    .filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     .filter-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,.12); background: transparent; color: var(--muted); border-radius: 20px; cursor: pointer; font-size: 12px; }
     .filter-btn.active { background: var(--primary); color: var(--bg); border-color: var(--primary); }
+    .sort-btn {
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .sort-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
 
     /* Notes */
     .notes-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
@@ -144,12 +212,20 @@
     .note-content { margin: 6px 0; }
     .note-meta { font-size: 12px; color: var(--muted); }
     .note-actions { display:flex; gap:8px; margin-top:10px; }
+    .note-attachment-preview {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
 
     /* Tabs (bottom nav) */
     .tabs { position: sticky; bottom: 0; z-index: 10; backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
             background: linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,0)), var(--bg-soft); box-shadow: var(--shadow); }
-    .tabbar { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; padding: 10px; }
-    .tab-btn { border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; color: var(--text); background: var(--card); transition: all 0.2s ease; }
+    .tabbar { display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; padding: 10px; } /* Updated to 6 columns for passwords tab */
+    .tab-btn { border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; color: var(--text); background: var(--card); transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; }
+    .tab-btn i { font-size: 20px; margin-bottom: 4px; }
     .tab-btn:hover { transform: translateY(-1px); }
     .tab-btn.active { outline: 2px solid var(--primary); box-shadow: 0 0 0 6px rgba(93,242,255,.12); }
 
@@ -185,14 +261,184 @@
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
+
+    /* Chart specific styles */
+    #chartsContainer {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-top: 16px;
+      min-height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #myChart {
+      max-width: 100%;
+      height: 300px;
+    }
+
+    /* Savings Goal Specific Styles */
+    .savings-goal-item {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .goal-title {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .goal-target-amount {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .goal-progress-bar-container {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .goal-progress-bar {
+      height: 100%;
+      background: var(--warning); /* Progress bar color */
+      width: 0%;
+      border-radius: 8px;
+      transition: width 0.5s ease-in-out;
+    }
+    .goal-progress-text {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+    .goal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .goal-actions .btn {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+
+    /* Password Manager Styles */
+    .password-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .password-item {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .password-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 35px rgba(0,0,0,.4);
+    }
+    .password-info {
+      flex-grow: 1;
+    }
+    .password-title {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .password-username {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .password-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .password-actions .btn {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+    .password-hide-show {
+      background: var(--bg-soft);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    .password-search-container {
+        margin-bottom: 15px;
+        position: relative;
+    }
+    .password-search-container input {
+        padding-right: 40px; /* Space for search icon */
+    }
+    .password-search-icon {
+        position: absolute;
+        left: 12px; /* Adjust for RTL */
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+    }
+    .password-filter-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        overflow-x: auto; /* Allow horizontal scrolling for many filters */
+        padding-bottom: 5px; /* Space for scrollbar */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    .password-filter-btn {
+        padding: 6px 12px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 12px;
+        white-space: nowrap; /* Prevent text wrapping */
+    }
+    .password-filter-btn.active {
+        background: var(--primary);
+        color: var(--bg);
+        border-color: var(--primary);
+    }
+
+    /* Master Password Lock Screen Styles */
+    /* REMOVED: #lockScreen related styles as the feature is being removed */
+
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="app" id="app">
     <header>
       <div class="topbar">
         <div class="brand"><div class="logo" aria-hidden="true"></div> Finote</div>
-        <button id="modeBtn" class="mode-toggle" aria-label="تبديل الوضع">🌙 / ☀️</button>
+        <div class="header-actions">
+          <button id="modeBtn" class="mode-toggle" aria-label="تبديل الوضع" data-lang-key="modeToggle">🌙 / ☀️</button>
+          <button id="languageBtn" class="lang-toggle" aria-label="تبديل اللغة" data-lang-key="languageToggle">عربي / English</button>
+          <!-- New button for Password Manager tab -->
+          <button id="passwordsTabToggle" class="passwords-toggle" aria-label="مدير كلمات المرور" data-lang-key="passwordsTab">🔐</button>
+        </div>
       </div>
     </header>
 
@@ -200,43 +446,61 @@
       <!-- DASHBOARD TAB -->
       <section id="tab-dashboard" class="tab" aria-label="لوحة التحكم">
         <div class="card balance">
-          <div class="label">الرصيد الحالي</div>
+          <div class="label" data-lang-key="balanceLabel">الرصيد الحالي</div>
           <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
             <div class="value" id="balanceValue">••••• EGP</div>
-            <button class="balance-toggle" id="balanceToggle" aria-label="إظهار/إخفاء الرصيد">👁️</button>
+            <button class="balance-toggle" id="balanceToggle" data-lang-key="balanceToggleShow" aria-label="إظهار/إخفاء الرصيد">👁️</button>
           </div>
         </div>
 
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-label">إجمالي الدخل</div>
+            <div class="stat-label" data-lang-key="totalIncomeLabel">إجمالي الدخل</div>
             <div class="stat-value stat-income" id="totalIncome">0 EGP</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">إجمالي المصروفات</div>
+            <div class="stat-label" data-lang-key="totalExpensesLabel">إجمالي المصروفات</div>
             <div class="stat-value stat-expense" id="totalExpenses">0 EGP</div>
+          </div>
+        </div>
+        <!-- New savings card -->
+        <div class="card balance" style="margin-top: 14px;">
+          <div class="label" data-lang-key="savingsLabel">المدخرات</div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <div class="value savings" id="savingsBalanceValue">••••• EGP</div>
+            <button class="balance-toggle" id="savingsBalanceToggle" data-lang-key="balanceToggleShow" aria-label="إظهار/إخفاء المدخرات">👁️</button>
           </div>
         </div>
 
         <div class="actions">
-          <button class="btn btn-primary" id="btnIncome">+ دخل</button>
-          <button class="btn btn-danger" id="btnExpense">+ مصروف</button>
-          <button class="btn btn-accent full" id="btnQuickNote">+ نوت سريعة</button>
+          <button class="btn btn-primary" id="btnIncome" data-lang-key="incomeBtn">+ دخل</button>
+          <button class="btn btn-danger" id="btnExpense" data-lang-key="expenseBtn">+ مصروف</button>
+          <button class="btn btn-warning" id="btnAddToSavings" data-lang-key="addToSavingsBtn">+ إضافة للمدخرات</button>
+          <button class="btn btn-glass" id="btnBillSplit" data-lang-key="billSplitBtn">تقسيم فاتورة 🤝</button>
+          <button class="btn btn-accent full" id="btnQuickNote" data-lang-key="quickNoteBtn">+ نوت سريعة</button>
         </div>
 
         <div class="section-title">
-          المعاملات الأخيرة
+          <span data-lang-key="recentTransactionsTitle">المعاملات الأخيرة</span>
           <div style="display: flex; gap: 8px;">
-            <button class="export-btn" id="btnExportData">تصدير</button>
-            <button class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" id="btnClearAll">مسح الكل</button>
+            <button class="export-btn" id="btnExportData" data-lang-key="exportBtn">تصدير JSON</button>
+            <button class="export-btn" id="btnExportCSV" data-lang-key="exportCSVBtn">تصدير CSV</button>
+            <button class="btn btn-danger" style="font-size: 12px; padding: 6px 10px;" id="btnClearAll" data-lang-key="clearAllBtn">مسح الكل</button>
           </div>
         </div>
         
         <div class="filter-row">
-          <button class="filter-btn active" data-filter="all">الكل</button>
-          <button class="filter-btn" data-filter="income">دخل</button>
-          <button class="filter-btn" data-filter="expense">مصروف</button>
-          <button class="filter-btn" data-filter="today">اليوم</button>
+          <button class="filter-btn active" data-filter="all" data-lang-key="filterAll">الكل</button>
+          <button class="filter-btn" data-filter="income" data-lang-key="filterIncome">دخل</button>
+          <button class="filter-btn" data-filter="expense" data-lang-key="filterExpense">مصروف</button>
+          <button class="filter-btn" data-filter="savings" data-lang-key="filterSavings">مدخرات</button>
+          <button class="filter-btn" data-filter="today" data-lang-key="filterToday">اليوم</button>
+        </div>
+        <!-- Sorting controls -->
+        <div class="filter-row" style="margin-top: 8px;">
+          <span style="color: var(--muted); font-size: 12px;" data-lang-key="sortByLabel">ترتيب حسب:</span>
+          <button class="sort-btn active" data-sort="newest" data-lang-key="sortNewest">الأحدث</button>
+          <button class="sort-btn" data-sort="oldest" data-lang-key="sortOldest">الأقدم</button>
         </div>
         
         <div id="recentList" class="tx-list"></div>
@@ -245,71 +509,132 @@
       <!-- TRANSACTIONS TAB -->
       <section id="tab-transactions" class="tab" hidden aria-label="جميع المعاملات">
         <div class="section-title">
-          جميع المعاملات
-          <span id="txCount">0 معاملة</span>
+          <span data-lang-key="allTransactionsTitle">جميع المعاملات</span>
+          <span id="txCount">0 <span data-lang-key="txCount">معاملة</span></span>
         </div>
         <div class="filter-row">
-          <button class="filter-btn active" data-filter="all">الكل</button>
-          <button class="filter-btn" data-filter="income">دخل</button>
-          <button class="filter-btn" data-filter="expense">مصروف</button>
+          <button class="filter-btn active" data-filter="all" data-lang-key="filterAll">الكل</button>
+          <button class="filter-btn" data-filter="income" data-lang-key="filterIncome">دخل</button>
+          <button class="filter-btn" data-filter="expense" data-lang-key="filterExpense">مصروف</button>
+          <button class="filter-btn" data-filter="savings" data-lang-key="filterSavings">مدخرات</button>
+        </div>
+        <!-- Sorting controls for all transactions -->
+        <div class="filter-row" style="margin-top: 8px;">
+          <span style="color: var(--muted); font-size: 12px;" data-lang-key="sortByLabel">ترتيب حسب:</span>
+          <button class="sort-btn active" data-sort="newest" data-lang-key="sortNewest">الأحدث</button>
+          <button class="sort-btn" data-sort="oldest" data-lang-key="sortOldest">الأقدم</button>
         </div>
         <div id="allTransactionsList" class="tx-list"></div>
+      </section>
+
+      <!-- SAVINGS TAB -->
+      <section id="tab-savings" class="tab" hidden aria-label="المدخرات">
+        <div class="section-title">
+          <span data-lang-key="overallSavingsTitle">إجمالي المدخرات</span>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <div class="value savings" id="overallSavingsValue">••••• EGP</div>
+            <button class="balance-toggle" id="overallSavingsToggle" data-lang-key="balanceToggleShow" aria-label="إظهار/إخفاء المدخرات">👁️</button>
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 14px;">
+          <button class="btn btn-warning full" id="btnAddToSavingsTab" data-lang-key="addToSavingsBtn">+ إضافة للمدخرات</button>
+          <button class="btn btn-danger full" id="btnWithdrawFromSavingsTab" data-lang-key="withdrawFromSavingsBtn">- سحب من المدخرات</button>
+        </div>
+
+        <div class="section-title">
+          <span data-lang-key="savingsGoalsTitle">المدخرات المستهدفة</span>
+          <button class="btn btn-primary" id="btnAddGoal" data-lang-key="addGoalBtn">+ إضافة هدف</button>
+        </div>
+        <div id="savingsGoalsList" class="notes-grid"></div>
+
+        <div class="section-title">
+          <span data-lang-key="savingsHistoryTitle">سجل المدخرات</span>
+        </div>
+        <div id="savingsTransactionsList" class="tx-list"></div>
+      </section>
+
+      <!-- CHARTS TAB -->
+      <section id="tab-charts" class="tab" hidden aria-label="الرسوم البيانية">
+        <div class="section-title" data-lang-key="chartsTitle">الرسوم البيانية</div>
+        <div id="chartsContainer">
+          <canvas id="myChart"></canvas>
+        </div>
       </section>
 
       <!-- NOTES TAB -->
       <section id="tab-notes" class="tab" hidden aria-label="النوتس">
         <div class="notes-head">
-          <h3 style="margin:0">النوتس</h3>
-          <button class="btn btn-primary" id="btnAddNote">+ إضافة نوت</button>
+          <h3 style="margin:0" data-lang-key="notesTitle">النوتس</h3>
+          <button class="btn btn-primary" id="btnAddNote" data-lang-key="addNoteBtn">+ إضافة نوت</button>
         </div>
         <div class="notes-grid" id="notesList"></div>
+      </section>
+
+      <!-- PASSWORDS TAB -->
+      <section id="tab-passwords" class="tab" hidden aria-label="مدير كلمات المرور">
+        <div class="section-title">
+            <span data-lang-key="passwordsTitle">كلمات المرور</span>
+            <button class="btn btn-primary" id="btnAddPassword" data-lang-key="addPasswordBtn">+ إضافة كلمة مرور</button>
+        </div>
+        <div class="password-search-container">
+            <input type="text" id="passwordSearchInput" data-lang-key="passwordSearchPlaceholder" placeholder="بحث عن كلمات المرور..." />
+            <span class="password-search-icon"><i class="fas fa-search"></i></span>
+        </div>
+        <div id="passwordFilterRow" class="password-filter-row">
+            <button class="password-filter-btn active" data-filter-service="all" data-lang-key="filterAll">الكل</button>
+        </div>
+        <div id="passwordList" class="password-grid"></div>
       </section>
     </main>
 
     <!-- Bottom Tabs -->
     <nav class="tabs" aria-label="التنقل السفلي">
       <div class="tabbar">
-        <button class="tab-btn active" data-tab="dashboard">الرئيسية</button>
-        <button class="tab-btn" data-tab="transactions">المعاملات</button>
-        <button class="tab-btn" data-tab="notes">النوتس</button>
+        <button class="tab-btn active" data-tab="dashboard" data-lang-key="tabDashboard"><i class="fas fa-home"></i><span data-lang-key="tabDashboard">الرئيسية</span></button>
+        <button class="tab-btn" data-tab="transactions" data-lang-key="tabTransactions"><i class="fas fa-exchange-alt"></i><span data-lang-key="tabTransactions">المعاملات</span></button>
+        <button class="tab-btn" data-tab="savings" data-lang-key="tabSavings"><i class="fas fa-piggy-bank"></i><span data-lang-key="tabSavings">المدخرات</span></button>
+        <button class="tab-btn" data-tab="charts" data-lang-key="tabCharts"><i class="fas fa-chart-pie"></i><span data-lang-key="tabCharts">الرسوم البيانية</span></button>
+        <button class="tab-btn" data-tab="notes" data-lang-key="tabNotes"><i class="fas fa-clipboard"></i><span data-lang-key="tabNotes">النوتس</span></button>
+        <button class="tab-btn" data-tab="passwords" data-lang-key="tabPasswords"><i class="fas fa-lock"></i><span data-lang-key="tabPasswords">كلمات المرور</span></button>
       </div>
     </nav>
   </div>
+
+  <!-- REMOVED: Master Password Lock Screen HTML -->
 
   <!-- Modals -->
   <dialog id="modalTx">
     <form method="dialog" id="txForm">
       <div class="modal-head">
-        <div id="txModalTitle">إضافة معاملة</div> <!-- Changed to div for modal title -->
+        <div id="txModalTitle" data-lang-key="modalTxTitleAdd">إضافة معاملة</div>
         <button class="close-x" type="button" onclick="closeTx()">✕</button>
       </div>
       <div class="modal-body">
-        <label>العنوان</label>
-        <input required type="text" id="txTitleInput" placeholder="مثال: راتب، إيجار، طعام" />
+        <label data-lang-key="txInputTitle">العنوان</label>
+        <input required type="text" id="txTitleInput" data-lang-key="txInputTitlePlaceholder" placeholder="مثال: راتب، إيجار، طعام" />
         <div class="row">
           <div>
-            <label>المبلغ (EGP)</label>
+            <label data-lang-key="txInputAmount">المبلغ (EGP)</label>
             <input required type="number" step="0.01" min="0" id="txAmount" />
           </div>
           <div>
-            <label>النوع</label>
+            <label data-lang-key="txInputType">النوع</label>
             <select id="txType">
-              <option value="income">دخل</option>
-              <option value="expense">مصروف</option>
+              <option value="income" data-lang-key="txTypeIncome">دخل</option>
+              <option value="expense" data-lang-key="txTypeExpense">مصروف</option>
+              <option value="addToSavings" data-lang-key="txTypeAddToSavings">إضافة للمدخرات</option>
+              <option value="withdrawFromSavings" data-lang-key="txTypeWithdrawFromSavings">سحب من المدخرات</option>
             </select>
           </div>
         </div>
-        <label>الفئة (اختياري)</label>
-        <input type="text" id="txCategory" placeholder="تفاصيل إضافية: وجبة غداء، فاتورة الكهرباء…" list="categoryList" />
-        <datalist id="categoryList"></datalist>
-        <label>التاريخ</label>
+        <label data-lang-key="txInputDate">التاريخ</label>
         <input type="date" id="txDate" />
-        <label>ملاحظة (اختياري)</label>
-        <textarea id="txNote" placeholder="تفاصيل سريعة"></textarea>
+        <label data-lang-key="txInputNote">ملاحظة (اختياري)</label>
+        <textarea id="txNote" data-lang-key="txInputNotePlaceholder" placeholder="تفاصيل سريعة"></textarea>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" type="button" onclick="closeTx()">إلغاء</button>
-        <button class="btn btn-primary" id="txSave" value="default">حفظ</button>
+        <button class="btn btn-ghost" type="button" onclick="closeTx()" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-primary" id="txSave" value="default" data-lang-key="saveBtn">حفظ</button>
       </div>
     </form>
   </dialog>
@@ -317,38 +642,119 @@
   <dialog id="modalNote">
     <form method="dialog" id="noteForm">
       <div class="modal-head">
-        <div id="noteTitle">نوت جديدة</div>
+        <div id="noteTitle" data-lang-key="noteModalTitleNew">نوت جديدة</div>
         <button class="close-x" type="button" onclick="closeNote()">✕</button>
       </div>
       <div class="modal-body">
-        <label>العنوان</label>
-        <input id="noteInputTitle" type="text" placeholder="عنوان النوت" />
-        <label>المحتوى</label>
-        <textarea id="noteInputContent" placeholder="اكتب ملاحظتك هنا"></textarea>
+        <label data-lang-key="noteInputTitle">العنوان</label>
+        <input id="noteInputTitle" type="text" data-lang-key="noteInputTitlePlaceholder" placeholder="عنوان النوت" />
+        <label data-lang-key="noteInputContent">المحتوى</label>
+        <textarea id="noteInputContent" data-lang-key="noteInputContentPlaceholder" placeholder="اكتب ملاحظتك هنا"></textarea>
+        <label data-lang-key="noteInputAttachment">مرفق (صورة)</label>
+        <input type="file" accept="image/*" id="noteAttachmentInput" />
+        <img id="noteAttachmentPreview" class="note-attachment-preview" style="display:none;" src="" alt="Attachment preview" />
         <label style="display:flex; align-items:center; gap:8px; margin-top:12px">
-          <input type="checkbox" id="notePinned" style="width:auto" /> تثبيت النوت (Pin)
+          <input type="checkbox" id="notePinned" style="width:auto" /> <span data-lang-key="notePinnedLabel">تثبيت النوت (Pin)</span>
         </label>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" type="button" onclick="closeNote()">إلغاء</button>
-        <button class="btn btn-primary" id="noteSave" value="default">حفظ</button>
+        <button class="btn btn-ghost" type="button" onclick="closeNote()" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-primary" id="noteSave" value="default" data-lang-key="saveBtn">حفظ</button>
       </div>
     </form>
   </dialog>
 
+  <!-- Bill Split Modal -->
+  <dialog id="modalBillSplit">
+    <form method="dialog" id="billSplitForm">
+      <div class="modal-head">
+        <div data-lang-key="billSplitModalTitle">تقسيم فاتورة</div>
+        <button class="close-x" type="button" onclick="closeBillSplit()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label data-lang-key="billSplitTotalAmount">إجمالي المبلغ (EGP)</label>
+        <input required type="number" step="0.01" min="0" id="billTotalAmount" />
+        <label data-lang-key="billSplitNumPeople">عدد الأشخاص</label>
+        <input required type="number" step="1" min="1" id="billNumPeople" value="2" />
+        <label data-lang-key="billSplitNote">ملاحظة الفاتورة (اختياري)</label>
+        <textarea id="billSplitNote" data-lang-key="billSplitNotePlaceholder" placeholder="مثال: فاتورة عشاء، رحلة…"></textarea>
+
+        <p style="margin-top: 15px; font-weight: bold;"><span data-lang-key="perPersonAmount">مبلغ حصة الفرد:</span> <span id="perPersonAmountValue">0 EGP</span></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeBillSplit()" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-primary" id="billSplitSave" type="submit" data-lang-key="billSplitSaveExpense">حفظ كمصروفات</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add/Edit Savings Goal Modal -->
+  <dialog id="modalAddGoal">
+    <form method="dialog" id="addGoalForm">
+      <div class="modal-head">
+        <div id="goalModalTitle" data-lang-key="addGoalModalTitle">إضافة هدف ادخار</div>
+        <button class="close-x" type="button" onclick="closeAddGoal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label data-lang-key="goalInputTitle">عنوان الهدف</label>
+        <input required type="text" id="goalTitleInput" data-lang-key="goalInputTitlePlaceholder" placeholder="مثال: لشراء هاتف جديد، إجازة" />
+        <label data-lang-key="goalInputTargetAmount">المبلغ المستهدف (EGP)</label>
+        <input required type="number" step="0.01" min="0" id="goalTargetAmountInput" />
+        <label data-lang-key="goalInputDueDate">تاريخ الاستحقاق (اختياري)</label>
+        <input type="date" id="goalDueDateInput" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closeAddGoal()" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-primary" id="goalSave" value="default" data-lang-key="saveBtn">حفظ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add/Edit Password Modal -->
+  <dialog id="modalPassword">
+    <form method="dialog" id="passwordForm">
+      <div class="modal-head">
+        <div id="passwordModalTitle" data-lang-key="addPasswordModalTitle">إضافة كلمة مرور</div>
+        <button class="close-x" type="button" onclick="closePassword()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label data-lang-key="passwordInputService">الخدمة/الموقع</label>
+        <input required type="text" id="passwordServiceInput" data-lang-key="passwordInputServicePlaceholder" placeholder="مثال: Facebook, Google" />
+        <label data-lang-key="passwordInputUsername">اسم المستخدم/الإيميل</label>
+        <input required type="text" id="passwordUsernameInput" data-lang-key="passwordInputUsernamePlaceholder" placeholder="مثال: username@email.com" />
+        <label data-lang-key="passwordInputPassword">كلمة المرور</label>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <input required type="password" id="passwordInputPassword" data-lang-key="passwordInputPasswordPlaceholder" placeholder="كلمة المرور القوية" style="flex-grow:1;" />
+            <button type="button" class="password-hide-show" onclick="togglePasswordVisibility()">👁️</button>
+        </div>
+        <label data-lang-key="passwordInputWebsite">الموقع الإلكتروني (اختياري)</label>
+        <input type="url" id="passwordWebsiteInput" data-lang-key="passwordInputWebsitePlaceholder" placeholder="مثال: https://www.facebook.com" />
+        <label data-lang-key="passwordInputNote">ملاحظة (اختياري)</label>
+        <textarea id="passwordNoteInput" data-lang-key="passwordInputNotePlaceholder" placeholder="ملاحظات إضافية حول كلمة المرور"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" onclick="closePassword()" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-primary" id="passwordSave" value="default" data-lang-key="saveBtn">حفظ</button>
+      </div>
+    </form>
+  </dialog>
+
+
   <!-- Custom Confirmation Modal -->
   <dialog id="confirmationModal">
-    <div class="modal-head">
-      <div id="confirmationModalTitle">تأكيد</div>
-      <button class="close-x" type="button" onclick="closeConfirmationModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <p id="confirmationModalMessage"></p>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" type="button" id="cancelConfirmationBtn">إلغاء</button>
-      <button class="btn btn-danger" id="confirmActionBtn">تأكيد</button>
-    </div>
+    <form method="dialog">
+      <div class="modal-head">
+        <div id="confirmationModalTitle" data-lang-key="confirmationModalTitle">تأكيد</div>
+        <button class="close-x" type="button" onclick="closeConfirmationModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationModalMessage"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" id="cancelConfirmationBtn" data-lang-key="cancelBtn">إلغاء</button>
+        <button class="btn btn-danger" id="confirmActionBtn" data-lang-key="confirmBtn">تأكيد</button>
+      </div>
+    </form>
   </dialog>
 
 
@@ -357,7 +763,13 @@
     const LS_KEYS = {
       TX: 'finote_transactions_v1',
       NOTES: 'finote_notes_v1',
-      THEME: 'finote_theme'
+      THEME: 'finote_theme',
+      SAVINGS: 'finote_savings_v1',
+      LANGUAGE: 'finote_language', // New key for language
+      SAVINGS_GOALS: 'finote_savings_goals_v1', // New key for savings goals
+      PASSWORDS: 'finote_passwords_v1', // New key for passwords
+      // REMOVED: MASTER_PASSWORD_HASH: 'finote_master_password_hash', // New key for master password hash
+      PASSWORD_FILTER_SERVICE: 'finote_password_filter_service' // New key for password filter
     };
     const readLS = (k, fallback) => {
       try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; }
@@ -367,8 +779,453 @@
     // ====== State ======
     let transactions = readLS(LS_KEYS.TX, []);
     let notes = readLS(LS_KEYS.NOTES, []);
+    let savingsTransactions = readLS(LS_KEYS.SAVINGS, []);
+    let savingsGoals = readLS(LS_KEYS.SAVINGS_GOALS, []); // New state for savings goals
+    let passwords = readLS(LS_KEYS.PASSWORDS, []); // New state for passwords
     let currentFilter = 'all';
+    let currentSort = 'newest';
     let balanceVisible = readLS('finote_balance_visible', false);
+    let savingsBalanceVisible = readLS('finote_savings_balance_visible', false);
+    let myChartInstance = null;
+    // REMOVED: let masterPasswordHash = readLS(LS_KEYS.MASTER_PASSWORD_HASH, null); // Master password hash
+    // REMOVED: let passwordsUnlocked = false; // Flag to check if passwords are unlocked
+    let currentPasswordServiceFilter = readLS(LS_KEYS.PASSWORD_FILTER_SERVICE, 'all');
+
+
+    // ====== Language & Translations ======
+    const translations = {
+      ar: {
+        'appTitle': 'Finote – مصاريف + نوتس',
+        'modeToggle': '🌙 / ☀️',
+        'languageToggle': 'English / عربي',
+        'passwordsTab': '🔐', // New translation for passwords tab toggle
+        'balanceLabel': 'الرصيد الحالي',
+        'balanceToggleShow': '👁️',
+        'balanceToggleHide': '🙈',
+        'totalIncomeLabel': 'إجمالي الدخل',
+        'totalExpensesLabel': 'إجمالي المصروفات',
+        'savingsLabel': 'المدخرات',
+        'incomeBtn': '+ دخل',
+        'expenseBtn': '+ مصروف',
+        'addToSavingsBtn': '+ إضافة للمدخرات',
+        'quickNoteBtn': '+ نوت سريعة',
+        'billSplitBtn': 'تقسيم فاتورة 🤝',
+        'recentTransactionsTitle': 'المعاملات الأخيرة',
+        'exportBtn': 'تصدير JSON',
+        'exportCSVBtn': 'تصدير CSV',
+        'clearAllBtn': 'مسح الكل',
+        'filterAll': 'الكل',
+        'filterIncome': 'دخل',
+        'filterExpense': 'مصروف',
+        'filterSavings': 'مدخرات',
+        'filterToday': 'اليوم',
+        'sortByLabel': 'ترتيب حسب:',
+        'sortNewest': 'الأحدث',
+        'sortOldest': 'الأقدم',
+        'emptyTransactions': 'لا توجد معاملات بعد',
+        'allTransactionsTitle': 'جميع المعاملات',
+        'txCount': 'معاملة', // Will be prepended with count
+        'emptyAllTransactions': 'لا توجد معاملات',
+        'overallSavingsTitle': 'إجمالي المدخرات',
+        'withdrawFromSavingsBtn': '- سحب من المدخرات',
+        'savingsGoalsTitle': 'المدخرات المستهدفة',
+        'addGoalBtn': '+ إضافة هدف',
+        'emptySavingsGoals': 'لا توجد أهداف ادخار بعد.',
+        'savingsHistoryTitle': 'سجل المدخرات',
+        'emptySavingsTransactions': 'لا توجد حركات مدخرات بعد',
+        'chartsTitle': 'الرسوم البيانية',
+        'notesTitle': 'النوتس',
+        'addNoteBtn': '+ إضافة نوت',
+        'emptyNotes': 'لا توجد نوتس بعد',
+        'passwordsTitle': 'كلمات المرور', // New translation for passwords section title
+        'addPasswordBtn': '+ إضافة كلمة مرور', // New translation for add password button
+        'passwordSearchPlaceholder': 'بحث عن كلمات المرور...', // New translation for password search
+        'emptyPasswords': 'لا توجد كلمات مرور محفوظة.', // New translation for empty passwords
+        'tabDashboard': 'الرئيسية',
+        'tabTransactions': 'المعاملات',
+        'tabSavings': 'المدخرات',
+        'tabCharts': 'الرسوم البيانية',
+        'tabNotes': 'النوتس',
+        'tabPasswords': 'كلمات المرور', // New translation for passwords tab
+        'modalTxTitleAdd': 'إضافة معاملة',
+        'modalTxTitleIncome': 'إضافة دخل',
+        'modalTxTitleExpense': 'إضافة مصروف',
+        'modalTxTitleAddToSavings': 'إضافة للمدخرات',
+        'modalTxTitleWithdrawFromSavings': 'سحب من المدخرات',
+        'txInputTitle': 'العنوان',
+        'txInputTitlePlaceholder': 'مثال: راتب، إيجار، طعام',
+        'txInputAmount': 'المبلغ (EGP)',
+        'txInputType': 'النوع',
+        'txTypeIncome': 'دخل',
+        'txTypeExpense': 'مصروف',
+        'txTypeAddToSavings': 'إضافة للمدخرات',
+        'txTypeWithdrawFromSavings': 'سحب من المدخرات',
+        'txInputDate': 'التاريخ',
+        'txInputNote': 'ملاحظة (اختياري)',
+        'txInputNotePlaceholder': 'تفاصيل سريعة',
+        'cancelBtn': 'إلغاء',
+        'saveBtn': 'حفظ',
+        'notificationAmountError': 'من فضلك أدخل مبلغ صحيح.',
+        'notificationTitleError': 'من فضلك أدخل عنوان المعاملة.',
+        'notificationTxSaved': 'تم حفظ المعاملة بنجاح.',
+        'noteModalTitleNew': 'نوت جديدة',
+        'noteModalTitleEdit': 'تعديل نوت',
+        'noteInputTitle': 'العنوان',
+        'noteInputTitlePlaceholder': 'عنوان النوت',
+        'noteInputContent': 'المحتوى',
+        'noteInputContentPlaceholder': 'اكتب ملاحظتك هنا',
+        'noteInputAttachment': 'مرفق (صورة)',
+        'notePinnedLabel': 'تثبيت النوت (Pin)',
+        'notificationNoteTitleContentError': 'من فضلك أدخل عنوان أو محتوى للنوت.',
+        'notificationNoteSaved': 'تم حفظ النوت بنجاح.',
+        'notificationNotePinUpdated': 'تم تحديث تثبيت النوت.',
+        'noteUntitled': 'بدون عنوان',
+        'notePinActionPin': 'تثبيت',
+        'notePinActionUnpin': 'إلغاء التثبيت',
+        'noteEditAction': 'تعديل',
+        'noteDeleteAction': 'حذف',
+        'notificationExportSuccess': 'تم تصدير البيانات بنجاح.',
+        'notificationCSVExportSuccess': 'تم تصدير البيانات كـ CSV بنجاح.',
+        'confirmationModalTitle': 'تأكيد',
+        'confirmationDeleteTx': 'هل أنت متأكد أنك تريد حذف هذه المعاملة؟',
+        'notificationDeleteTxSuccess': 'تم حذف المعاملة بنجاح.',
+        'confirmationDeleteNote': 'هل أنت متأكد أنك تريد حذف هذه النوت؟',
+        'notificationDeleteNoteSuccess': 'تم حذف النوت بنجاح.',
+        'confirmationDeleteGoal': 'هل أنت متأكد أنك تريد حذف هدف الادخار هذا؟',
+        'notificationDeleteGoalSuccess': 'تم حذف هدف الادخار بنجاح.',
+        'confirmationClearAll': 'هل أنت متأكد أنك تريد مسح جميع المعاملات والنوتس والمدخرات؟ لا يمكن التراجع عن هذا الإجراء.',
+        'notificationClearAllSuccess': 'تم مسح جميع البيانات بنجاح.',
+        'billSplitModalTitle': 'تقسيم فاتورة',
+        'billSplitTotalAmount': 'إجمالي المبلغ (EGP)',
+        'billSplitNumPeople': 'عدد الأشخاص',
+        'billSplitNote': 'ملاحظة الفاتورة (اختياري)',
+        'billSplitNotePlaceholder': 'مثال: فاتورة عشاء، رحلة…',
+        'perPersonAmount': 'مبلغ حصة الفرد:',
+        'billSplitSaveExpense': 'حفظ كمصروفات',
+        'notificationBillTotalError': 'من فضلك أدخل إجمالي مبلغ صحيح.',
+        'notificationBillPeopleError': 'من فضلك أدخل عدد أشخاص صحيح.',
+        'notificationBillSplitSaved': 'تم حفظ حصتك ({amount}) من الفاتورة.',
+        'chartTitle': 'نظرة عامة على المعاملات والمدخرات',
+        'chartXAxis': 'التاريخ',
+        'chartYAxis': 'المبلغ (EGP)',
+        'chartIncomeLabel': 'الدخل',
+        'chartExpenseLabel': 'المصروفات',
+        'chartAddToSavingsLabel': 'إضافة للمدخرات',
+        'chartWithdrawFromSavingsLabel': 'سحب من المدخرات',
+        'confirmBtn': 'تأكيد',
+        'addGoalModalTitle': 'إضافة هدف ادخار',
+        'goalInputTitle': 'عنوان الهدف',
+        'goalInputTitlePlaceholder': 'مثال: لشراء هاتف جديد، إجازة',
+        'goalInputTargetAmount': 'المبلغ المستهدف (EGP)',
+        'goalInputDueDate': 'تاريخ الاستحقاق (اختياري)',
+        'notificationGoalTitleError': 'من فضلك أدخل عنوان للهدف.',
+        'notificationGoalAmountError': 'من فضلك أدخل مبلغ مستهدف صحيح.',
+        'notificationGoalSaved': 'تم حفظ هدف الادخار بنجاح.',
+        'goalProgressAchieved': 'تم تحقيق الهدف!',
+        'goalProgressRemaining': 'متبقي: {remaining} EGP',
+        'goalAddFundsBtn': 'إضافة أموال',
+        'goalEditBtn': 'تعديل',
+        'goalDeleteBtn': 'حذف',
+        'addPasswordModalTitle': 'إضافة كلمة مرور جديدة',
+        'editPasswordModalTitle': 'تعديل كلمة مرور',
+        'passwordInputService': 'الخدمة/الموقع',
+        'passwordInputServicePlaceholder': 'مثال: Facebook, Google',
+        'passwordInputUsername': 'اسم المستخدم/الإيميل',
+        'passwordInputUsernamePlaceholder': 'مثال: username@email.com',
+        'passwordInputPassword': 'كلمة المرور',
+        'passwordInputPasswordPlaceholder': 'كلمة المرور القوية',
+        'passwordInputWebsite': 'الموقع الإلكتروني (اختياري)',
+        'passwordInputWebsitePlaceholder': 'مثال: https://www.facebook.com',
+        'passwordInputNote': 'ملاحظة (اختياري)',
+        'passwordInputNotePlaceholder': 'ملاحظات إضافية حول كلمة المرور',
+        'notificationPasswordServiceError': 'من فضلك أدخل اسم الخدمة/الموقع.',
+        'notificationPasswordUsernameError': 'من فضلك أدخل اسم المستخدم/الإيميل.',
+        'notificationPasswordPasswordError': 'من فضلك أدخل كلمة المرور.',
+        'notificationPasswordSaved': 'تم حفظ كلمة المرور بنجاح.',
+        'notificationDeletePasswordSuccess': 'تم حذف كلمة المرور بنجاح.',
+        'confirmationDeletePassword': 'هل أنت متأكد أنك تريد حذف كلمة المرور هذه؟',
+        'notificationUsernameCopied': 'تم نسخ اسم المستخدم.', // New translation
+        'notificationPasswordCopied': 'تم نسخ كلمة المرور.',
+        'masterPasswordTitle': 'كلمة المرور الرئيسية', // New translation. REMOVED in this version.
+        'masterPasswordPrompt': 'أدخل كلمة المرور الرئيسية للوصول إلى كلمات المرور الخاصة بك.', // New translation. REMOVED in this version.
+        'masterPasswordPlaceholder': 'كلمة المرور الرئيسية', // New translation. REMOVED in this version.
+        'unlockBtn': 'فتح', // New translation. REMOVED in this version.
+        'setMasterPasswordPrompt': 'يرجى تعيين كلمة مرور رئيسية لحماية كلمات المرور الخاصة بك:', // New translation. REMOVED in this version.
+        'invalidMasterPassword': 'كلمة مرور رئيسية غير صحيحة.', // New translation. REMOVED in this version.
+        'masterPasswordSet': 'تم تعيين كلمة المرور الرئيسية بنجاح!', // New translation. REMOVED in this version.
+        'forgotMasterPassword': 'نسيت كلمة المرور الرئيسية؟', // New translation. REMOVED in this version.
+        'confirmResetMasterPassword': 'هل أنت متأكد أنك تريد إعادة تعيين كلمة المرور الرئيسية؟ سيؤدي هذا إلى مسح جميع كلمات المرور المحفوظة ولا يمكن التراجع عنه.', // New translation. REMOVED in this version.
+        'masterPasswordResetSuccess': 'تمت إعادة تعيين كلمة المرور الرئيسية بنجاح. يرجى تعيين كلمة مرور جديدة.', // New translation. REMOVED in this version.
+        'tabDashboardIcon': '<i class="fas fa-home"></i>',
+        'tabTransactionsIcon': '<i class="fas fa-exchange-alt"></i>',
+        'tabSavingsIcon': '<i class="fas fa-piggy-bank"></i>',
+        'tabChartsIcon': '<i class="fas fa-chart-pie"></i>',
+        'tabNotesIcon': '<i class="fas fa-clipboard"></i>',
+        'tabPasswordsIcon': '<i class="fas fa-lock"></i>',
+      },
+      en: {
+        'appTitle': 'Finote – Expenses + Notes',
+        'modeToggle': '🌙 / ☀️',
+        'languageToggle': 'عربي / English',
+        'passwordsTab': '🔐', // New translation for passwords tab toggle
+        'balanceLabel': 'Current Balance',
+        'balanceToggleShow': '👁️',
+        'balanceToggleHide': '🙈',
+        'totalIncomeLabel': 'Total Income',
+        'totalExpensesLabel': 'Total Expenses',
+        'savingsLabel': 'Savings',
+        'incomeBtn': '+ Income',
+        'expenseBtn': '+ Expense',
+        'addToSavingsBtn': '+ Add to Savings',
+        'quickNoteBtn': '+ Quick Note',
+        'billSplitBtn': 'Split Bill 🤝',
+        'recentTransactionsTitle': 'Recent Transactions',
+        'exportBtn': 'Export JSON',
+        'exportCSVBtn': 'Export CSV',
+        'clearAllBtn': 'Clear All',
+        'filterAll': 'All',
+        'filterIncome': 'Income',
+        'filterExpense': 'Expense',
+        'filterSavings': 'Savings',
+        'filterToday': 'Today',
+        'sortByLabel': 'Sort By:',
+        'sortNewest': 'Newest',
+        'sortOldest': 'Oldest',
+        'emptyTransactions': 'No transactions yet',
+        'allTransactionsTitle': 'All Transactions',
+        'txCount': 'transactions',
+        'emptyAllTransactions': 'No transactions',
+        'overallSavingsTitle': 'Overall Savings',
+        'withdrawFromSavingsBtn': '- Withdraw from Savings',
+        'savingsGoalsTitle': 'Savings Goals',
+        'addGoalBtn': '+ Add Goal',
+        'emptySavingsGoals': 'No savings goals yet.',
+        'savingsHistoryTitle': 'Savings History',
+        'emptySavingsTransactions': 'No savings transactions yet',
+        'chartsTitle': 'Charts',
+        'notesTitle': 'Notes',
+        'addNoteBtn': '+ Add Note',
+        'emptyNotes': 'No notes yet',
+        'passwordsTitle': 'Passwords', // New translation for passwords section title
+        'addPasswordBtn': '+ Add Password', // New translation for add password button
+        'passwordSearchPlaceholder': 'Search passwords...', // New translation for password search
+        'emptyPasswords': 'No passwords saved.', // New translation for empty passwords
+        'tabDashboard': 'Dashboard',
+        'tabTransactions': 'Transactions',
+        'tabSavings': 'Savings',
+        'tabCharts': 'Charts',
+        'tabNotes': 'Notes',
+        'tabPasswords': 'Passwords', // New translation for passwords tab
+        'modalTxTitleAdd': 'Add Transaction',
+        'modalTxTitleIncome': 'Add Income',
+        'modalTxTitleExpense': 'Add Expense',
+        'modalTxTitleAddToSavings': 'Add to Savings',
+        'modalTxTitleWithdrawFromSavings': 'Withdraw from Savings',
+        'txInputTitle': 'Title',
+        'txInputTitlePlaceholder': 'Ex: Salary, Rent, Food',
+        'txInputAmount': 'Amount (EGP)',
+        'txInputType': 'Type',
+        'txTypeIncome': 'Income',
+        'txTypeExpense': 'Expense',
+        'txTypeAddToSavings': 'Add to Savings',
+        'txTypeWithdrawFromSavings': 'Withdraw from Savings',
+        'txInputDate': 'Date',
+        'txInputNote': 'Note (optional)',
+        'txInputNotePlaceholder': 'Quick details',
+        'cancelBtn': 'Cancel',
+        'saveBtn': 'Save',
+        'notificationAmountError': 'Please enter a valid amount.',
+        'notificationTitleError': 'Please enter a transaction title.',
+        'notificationTxSaved': 'Transaction saved successfully.',
+        'noteModalTitleNew': 'New Note',
+        'noteModalTitleEdit': 'Edit Note',
+        'noteInputTitle': 'Title',
+        'noteInputTitlePlaceholder': 'Note Title',
+        'noteInputContent': 'Content',
+        'noteInputContentPlaceholder': 'Write your note here',
+        'noteInputAttachment': 'Attachment (Image)',
+        'notePinnedLabel': 'Pin Note',
+        'notificationNoteTitleContentError': 'Please enter a title or content for the note.',
+        'notificationNoteSaved': 'Note saved successfully.',
+        'notificationNotePinUpdated': 'Note pin status updated.',
+        'noteUntitled': 'Untitled',
+        'notePinActionPin': 'Pin',
+        'notePinActionUnpin': 'Unpin',
+        'noteEditAction': 'Edit',
+        'noteDeleteAction': 'Delete',
+        'notificationExportSuccess': 'Data exported successfully.',
+        'notificationCSVExportSuccess': 'Data exported as CSV successfully.',
+        'confirmationModalTitle': 'Confirmation',
+        'confirmationDeleteTx': 'Are you sure you want to delete this transaction?',
+        'notificationDeleteTxSuccess': 'Transaction deleted successfully.',
+        'confirmationDeleteNote': 'Are you sure you want to delete this note?',
+        'notificationDeleteNoteSuccess': 'Note deleted successfully.',
+        'confirmationDeleteGoal': 'Are you sure you want to delete this savings goal?',
+        'notificationDeleteGoalSuccess': 'Savings goal deleted successfully.',
+        'confirmationClearAll': 'Are you sure you want to clear all transactions, notes, and savings? This action cannot be undone.',
+        'notificationClearAllSuccess': 'All data cleared successfully.',
+        'billSplitModalTitle': 'Split Bill',
+        'billSplitTotalAmount': 'Total Amount (EGP)',
+        'billSplitNumPeople': 'Number of People',
+        'billSplitNote': 'Bill Note (optional)',
+        'billSplitNotePlaceholder': 'Ex: Dinner bill, Trip...',
+        'perPersonAmount': 'Amount per Person:',
+        'billSplitSaveExpense': 'Save as Expense',
+        'notificationBillTotalError': 'Please enter a valid total amount.',
+        'notificationBillPeopleError': 'Please enter a valid number of people.',
+        'notificationBillSplitSaved': 'Your share ({amount}) of the bill has been saved.',
+        'chartTitle': 'Overview of Transactions and Savings',
+        'chartXAxis': 'Date',
+        'chartYAxis': 'Amount (EGP)',
+        'chartIncomeLabel': 'Income',
+        'chartExpenseLabel': 'Expenses',
+        'chartAddToSavingsLabel': 'Add to Savings',
+        'chartWithdrawFromSavingsLabel': 'Withdraw from Savings',
+        'confirmBtn': 'Confirm',
+        'addGoalModalTitle': 'Add Savings Goal',
+        'goalInputTitle': 'Goal Title',
+        'goalInputTitlePlaceholder': 'Ex: For new phone, vacation',
+        'goalInputTargetAmount': 'Target Amount (EGP)',
+        'goalInputDueDate': 'Due Date (optional)',
+        'notificationGoalTitleError': 'Please enter a title for the goal.',
+        'notificationGoalAmountError': 'Please enter a valid target amount.',
+        'notificationGoalSaved': 'Savings goal saved successfully.',
+        'goalProgressAchieved': 'Goal Achieved!',
+        'goalProgressRemaining': 'Remaining: {remaining} EGP',
+        'goalAddFundsBtn': 'Add Funds',
+        'goalEditBtn': 'Edit',
+        'goalDeleteBtn': 'Delete',
+        'addPasswordModalTitle': 'Add New Password',
+        'editPasswordModalTitle': 'Edit Password',
+        'passwordInputService': 'Service/Website',
+        'passwordInputServicePlaceholder': 'Ex: Facebook, Google',
+        'passwordInputUsername': 'Username/Email',
+        'passwordInputUsernamePlaceholder': 'Ex: username@email.com',
+        'passwordInputPassword': 'Password',
+        'passwordInputPasswordPlaceholder': 'Strong password',
+        'passwordInputWebsite': 'Website (optional)',
+        'passwordInputWebsitePlaceholder': 'Ex: https://www.facebook.com',
+        'passwordInputNote': 'Note (optional)',
+        'passwordInputNotePlaceholder': 'Additional notes about the password',
+        'notificationPasswordServiceError': 'Please enter a service/website name.',
+        'notificationPasswordUsernameError': 'Please enter a username/email.',
+        'notificationPasswordPasswordError': 'Please enter a password.',
+        'notificationPasswordSaved': 'Password saved successfully.',
+        'notificationDeletePasswordSuccess': 'Password deleted successfully.',
+        'confirmationDeletePassword': 'Are you sure you want to delete this password?',
+        'notificationUsernameCopied': 'Username copied to clipboard.',
+        'notificationPasswordCopied': 'Password copied to clipboard.',
+        'masterPasswordTitle': 'Master Password', // New translation. REMOVED in this version.
+        'masterPasswordPrompt': 'Enter your master password to access your passwords.', // New translation. REMOVED in this version.
+        'masterPasswordPlaceholder': 'Master Password', // New translation. REMOVED in this version.
+        'unlockBtn': 'Unlock', // New translation. REMOVED in this version.
+        'setMasterPasswordPrompt': 'Please set a master password to protect your passwords:', // New translation. REMOVED in this version.
+        'invalidMasterPassword': 'Invalid master password.', // New translation. REMOVED in this version.
+        'masterPasswordSet': 'Master password set successfully!', // New translation. REMOVED in this version.
+        'forgotMasterPassword': 'Forgot Master Password?', // New translation. REMOVED in this version.
+        'confirmResetMasterPassword': 'Are you sure you want to reset your master password? This will clear ALL saved passwords and cannot be undone.', // New translation. REMOVED in this version.
+        'masterPasswordResetSuccess': 'Master password reset successfully. Please set a new one.', // New translation. REMOVED in this version.
+        'tabDashboardIcon': '<i class="fas fa-home"></i>',
+        'tabTransactionsIcon': '<i class="fas fa-exchange-alt"></i>',
+        'tabSavingsIcon': '<i class="fas fa-piggy-bank"></i>',
+        'tabChartsIcon': '<i class="fas fa-chart-pie"></i>',
+        'tabNotesIcon': '<i class="fas fa-clipboard"></i>',
+        'tabPasswordsIcon': '<i class="fas fa-lock"></i>',
+      }
+    };
+
+    let currentLanguage = readLS(LS_KEYS.LANGUAGE, 'ar');
+
+    function updateUI(lang) {
+      const t = translations[lang];
+      document.title = t.appTitle;
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+      document.querySelectorAll('[data-lang-key]').forEach(element => {
+        const key = element.getAttribute('data-lang-key');
+        if (t[key]) {
+          if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+            element.placeholder = t[key];
+          } else if (element.tagName === 'TEXTAREA' && element.hasAttribute('placeholder')) {
+            element.placeholder = t[key];
+          } else if (element.tagName === 'BUTTON' || element.tagName === 'SPAN' || element.tagName === 'DIV' || element.tagName === 'LABEL' || element.tagName === 'H3' || element.tagName === 'OPTION' || element.tagName === 'P' || element.tagName === 'TITLE') {
+            if (element.hasAttribute('data-tab')) { // Handle tab buttons with inner HTML for icons
+                const iconKey = key + 'Icon';
+                if (t[iconKey]) {
+                    element.innerHTML = `${t[iconKey]}<span>${t[key]}</span>`;
+                } else {
+                    element.textContent = t[key];
+                }
+            } else {
+                element.textContent = t[key];
+            }
+          } else if (element.id === 'txCount') { // Special handling for txCount
+            // txCount is handled in renderAllTransactions directly
+          } else if (element.id === 'balanceToggle' || element.id === 'savingsBalanceToggle' || element.id === 'overallSavingsToggle') {
+            element.setAttribute('aria-label', lang === 'ar' ? 'إظهار/إخفاء الرصيد' : 'Show/Hide Balance'); // Hardcoded due to simpler toggle logic
+            element.textContent = balanceVisible ? t.balanceToggleHide : t.balanceToggleShow;
+            if (element.id === 'savingsBalanceToggle' || element.id === 'overallSavingsToggle') {
+                element.setAttribute('aria-label', lang === 'ar' ? 'إظهار/إخفاء المدخرات' : 'Show/Hide Savings');
+                element.textContent = savingsBalanceVisible ? t.balanceToggleHide : t.balanceToggleShow;
+            }
+          }
+        }
+      });
+      // Specific updates for elements not covered by data-lang-key or needing dynamic content
+      document.getElementById('modeBtn').textContent = t.modeToggle;
+      document.getElementById('languageBtn').textContent = t.languageToggle;
+      document.getElementById('passwordsTabToggle').textContent = t.passwordsTab; // Update passwords toggle button
+
+      // Update specific placeholders that don't have data-lang-key (e.g., txTitleInput)
+      document.getElementById('txTitleInput').placeholder = t.txInputTitlePlaceholder;
+      document.getElementById('txNote').placeholder = t.txInputNotePlaceholder;
+      document.getElementById('noteInputTitle').placeholder = t.noteInputTitlePlaceholder;
+      document.getElementById('noteInputContent').placeholder = t.noteInputContentPlaceholder;
+      document.getElementById('billSplitNote').placeholder = t.billSplitNotePlaceholder;
+      document.getElementById('goalTitleInput').placeholder = t.goalInputTitlePlaceholder; // New goal placeholder
+      document.getElementById('passwordSearchInput').placeholder = t.passwordSearchPlaceholder; // New password search placeholder
+      document.getElementById('passwordServiceInput').placeholder = t.passwordInputServicePlaceholder; // New password input placeholder
+      document.getElementById('passwordUsernameInput').placeholder = t.passwordInputUsernamePlaceholder; // New password input placeholder
+      document.getElementById('passwordInputPassword').placeholder = t.passwordInputPasswordPlaceholder; // New password input placeholder
+      document.getElementById('passwordWebsiteInput').placeholder = t.passwordInputWebsitePlaceholder; // New password input placeholder
+      document.getElementById('passwordNoteInput').placeholder = t.passwordInputNotePlaceholder; // New password input placeholder
+      
+      // REMOVED: Master password modal specific placeholders
+      // const masterPasswordInputEl = document.getElementById('masterPasswordInput');
+      // if (masterPasswordInputEl) {
+      //     masterPasswordInputEl.placeholder = t.masterPasswordPlaceholder;
+      //     document.getElementById('masterPasswordPromptText').textContent = masterPasswordHash ? t.masterPasswordPrompt : t.setMasterPasswordPrompt;
+      //     document.getElementById('unlockPasswordsBtn').textContent = masterPasswordHash ? t.unlockBtn : t.saveBtn;
+      //     document.getElementById('forgotMasterPasswordBtn').textContent = t.forgotMasterPassword;
+      // }
+
+
+      // Special handling for dynamic content with variables
+      const perPersonAmountSpanParent = document.querySelector('#modalBillSplit p');
+      if (perPersonAmountSpanParent) {
+        // Update the static part of the text, the number will be updated by calculatePerPersonAmount()
+        perPersonAmountSpanParent.firstChild.textContent = t.perPersonAmount + " ";
+      }
+      
+      // Re-render chart to update labels and colors
+      renderCharts();
+      renderRecent(); // Re-render lists to ensure empty messages are updated
+      renderAllTransactions();
+      renderSavingsTransactions();
+      renderNotes();
+      renderSavingsGoals(); // Re-render savings goals
+      renderPasswordFilters(); // Render password filters
+      renderPasswords(); // Re-render passwords
+      renderBalance(); // Update balance text if visibility is toggled.
+    }
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+      writeLS(LS_KEYS.LANGUAGE, currentLanguage);
+      // No need to call updateNumberFormatter() here as it's now fixed to 'en-US'
+      updateUI(currentLanguage);
+    }
 
     // ====== Theme ======
     const appRoot = document.documentElement; // <html>
@@ -378,27 +1235,59 @@
     const applyTheme = () => {
       const isLight = appRoot.classList.toggle('light');
       writeLS(LS_KEYS.THEME, isLight ? 'light' : 'dark');
+      renderCharts();
     };
     modeBtn.addEventListener('click', applyTheme);
+
+    // New Language Button
+    const languageBtn = document.getElementById('languageBtn');
+    languageBtn.addEventListener('click', toggleLanguage);
+
 
     // ====== Tabs ======
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabs = {
       dashboard: document.getElementById('tab-dashboard'),
       transactions: document.getElementById('tab-transactions'),
-      notes: document.getElementById('tab-notes')
+      savings: document.getElementById('tab-savings'),
+      charts: document.getElementById('tab-charts'),
+      notes: document.getElementById('tab-notes'),
+      passwords: document.getElementById('tab-passwords') // New passwords tab
     };
     tabBtns.forEach(btn => btn.addEventListener('click', () => {
+      // REMOVED: Master password check logic
+      // if (btn.dataset.tab === 'passwords' && !passwordsUnlocked) {
+      //     showLockScreen();
+      //     return;
+      // }
+
       tabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const t = btn.dataset.tab;
       for (const key in tabs) tabs[key].hidden = key !== t;
       if (t === 'transactions') renderAllTransactions();
+      if (t === 'savings') {
+        renderSavingsTransactions();
+        renderSavingsGoals(); // Also render savings goals when tab is active
+      }
+      if (t === 'charts') renderCharts();
+      if (t === 'passwords') renderPasswords(); // Render passwords when tab is active
     }));
+
+    // ====== Header Passwords Toggle Button ======
+    const passwordsTabToggle = document.getElementById('passwordsTabToggle');
+    passwordsTabToggle.addEventListener('click', () => {
+      // Find the "Passwords" tab button in the bottom navigation
+      const passwordTabBtn = document.querySelector('.tab-btn[data-tab="passwords"]');
+      if (passwordTabBtn) {
+        // Programmatically click the tab button to activate the tab
+        passwordTabBtn.click();
+      }
+    });
 
     // ====== Filter System ======
     function setupFilters() {
-      document.querySelectorAll('.filter-btn').forEach(btn => {
+      document.querySelectorAll('.filter-row .filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const parent = btn.closest('section');
           parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -410,12 +1299,40 @@
           } else if (parent.id === 'tab-transactions') {
             renderAllTransactions();
           }
+          // No chart re-render here as filters are for lists, not the overall chart
+        });
+      });
+    }
+
+    // ====== Sorting System ======
+    function setupSorting() {
+      document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const parent = btn.closest('section');
+          parent.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSort = btn.dataset.sort;
+
+          if (parent.id === 'tab-dashboard') {
+            renderRecent();
+          } else if (parent.id === 'tab-transactions') {
+            renderAllTransactions();
+          } else if (parent.id === 'tab-savings') {
+            renderSavingsTransactions();
+          }
         });
       });
     }
 
     // ====== Utilities ======
-    const fmt = new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 2 });
+    // Fixed formatter to always use English (en-US) for numbers
+    let fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+    
+    // Function to update the number formatter (now fixed to en-US)
+    function updateNumberFormatter() {
+      fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+    }
+
     const todayISO = () => new Date().toISOString().slice(0,10);
     const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
 
@@ -424,45 +1341,87 @@
       switch(filter) {
         case 'income': return txList.filter(t => t.type === 'income');
         case 'expense': return txList.filter(t => t.type === 'expense');
+        case 'savings': return txList.filter(t => t.type === 'addToSavings' || t.type === 'withdrawFromSavings');
         case 'today': return txList.filter(t => t.date === today);
         default: return txList;
       }
     }
 
+    function sortTransactions(txList, sort = 'newest') {
+      const sorted = [...txList].sort((a, b) => {
+        const dateA = new Date(a.date || a.createdAt);
+        const dateB = new Date(b.date || b.createdAt);
+        return sort === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+      return sorted;
+    }
+
+
     // ====== Render Balance & Stats ======
     const balanceEl = document.getElementById('balanceValue');
     const totalIncomeEl = document.getElementById('totalIncome');
     const totalExpensesEl = document.getElementById('totalExpenses');
+    const savingsBalanceEl = document.getElementById('savingsBalanceValue');
+    const overallSavingsValueEl = document.getElementById('overallSavingsValue');
 
     function calcStats() {
-      let totalIncome = 0, totalExpenses = 0;
+      let totalIncome = 0, totalExpenses = 0, totalSavings = 0;
       for (const t of transactions) {
         if (t.type === 'income') totalIncome += (+t.amount);
-        else totalExpenses += (+t.amount);
+        else if (t.type === 'expense') totalExpenses += (+t.amount);
       }
+
+      for (const s of savingsTransactions) {
+        if (s.type === 'addToSavings') totalSavings += (+s.amount);
+        else if (s.type === 'withdrawFromSavings') totalSavings -= (+s.amount);
+      }
+      
       const balance = totalIncome - totalExpenses;
-      return { balance, totalIncome, totalExpenses };
+      return { balance, totalIncome, totalExpenses, totalSavings };
     }
 
     function renderBalance() {
-      const { balance, totalIncome, totalExpenses } = calcStats();
-      const balanceEl = document.getElementById('balanceValue');
+      const { balance, totalIncome, totalExpenses, totalSavings } = calcStats();
       const toggleBtn = document.getElementById('balanceToggle');
+      const savingsToggleBtn = document.getElementById('savingsBalanceToggle');
+      const overallSavingsToggleBtn = document.getElementById('overallSavingsToggle');
       
+      const t = translations[currentLanguage];
+
+      // Main balance
       if (balanceVisible) {
         balanceEl.textContent = `${fmt.format(balance)} EGP`;
-        toggleBtn.textContent = '🙈';
-        toggleBtn.setAttribute('aria-label', 'إخفاء الرصيد');
+        toggleBtn.textContent = t.balanceToggleHide;
+        toggleBtn.setAttribute('aria-label', t.balanceToggleHide);
       } else {
         balanceEl.textContent = '••••• EGP';
-        toggleBtn.textContent = '👁️';
-        toggleBtn.setAttribute('aria-label', 'إظهار الرصيد');
+        toggleBtn.textContent = t.balanceToggleShow;
+        toggleBtn.setAttribute('aria-label', t.balanceToggleShow);
       }
-      
       balanceEl.className = 'value ' + (balance >= 0 ? 'positive' : 'negative');
       
       totalIncomeEl.textContent = `${fmt.format(totalIncome)} EGP`;
       totalExpensesEl.textContent = `${fmt.format(totalExpenses)} EGP`;
+
+      // Savings balance
+      if (savingsBalanceVisible) {
+        savingsBalanceEl.textContent = `${fmt.format(totalSavings)} EGP`;
+        savingsToggleBtn.textContent = t.balanceToggleHide;
+        savingsToggleBtn.setAttribute('aria-label', t.balanceToggleHide);
+        overallSavingsValueEl.textContent = `${fmt.format(totalSavings)} EGP`;
+        overallSavingsToggleBtn.textContent = t.balanceToggleHide;
+        overallSavingsToggleBtn.setAttribute('aria-label', t.balanceToggleHide);
+      } else {
+        savingsBalanceEl.textContent = '••••• EGP';
+        savingsToggleBtn.textContent = t.balanceToggleShow;
+        savingsToggleBtn.setAttribute('aria-label', t.balanceToggleShow);
+        overallSavingsValueEl.textContent = '••••• EGP';
+        overallSavingsToggleBtn.textContent = t.balanceToggleShow;
+        overallSavingsToggleBtn.setAttribute('aria-label', t.balanceToggleShow);
+      }
+      // Ensure savings value is always warning color
+      savingsBalanceEl.style.color = 'var(--warning)';
+      overallSavingsValueEl.style.color = 'var(--warning)';
     }
 
     // ====== Balance Toggle ======
@@ -471,30 +1430,64 @@
       writeLS('finote_balance_visible', balanceVisible);
       renderBalance();
     }
-
     document.getElementById('balanceToggle').addEventListener('click', toggleBalanceVisibility);
+
+    // ====== Savings Balance Toggle ======
+    function toggleSavingsBalanceVisibility() {
+      savingsBalanceVisible = !savingsBalanceVisible;
+      writeLS('finote_savings_balance_visible', savingsBalanceVisible);
+      renderBalance();
+    }
+    document.getElementById('savingsBalanceToggle').addEventListener('click', toggleSavingsBalanceVisibility);
+    document.getElementById('overallSavingsToggle').addEventListener('click', toggleSavingsBalanceVisibility);
+
 
     // ====== Render Transactions ======
     const recentList = document.getElementById('recentList');
     const allTransactionsList = document.getElementById('allTransactionsList');
+    const savingsTransactionsList = document.getElementById('savingsTransactionsList');
     const txCountEl = document.getElementById('txCount');
+
+    // Define a limit for recent transactions
+    const RECENT_TRANSACTION_LIMIT = 4; // Changed limit to 4 to better fit common iPhone screens
 
     function createTransactionElement(t, showDelete = false) {
       const item = document.createElement('div');
       item.className = 'tx-item';
-      // Use t.title as the main display title, and t.category/t.note in meta
-      const metaText = [t.category, t.note].filter(Boolean).map(escapeHTML).join(' · ');
+      let iconChar = '';
+      let amountClass = '';
+      let txIconClass = '';
+      
+      if (t.type === 'income') {
+        iconChar = '+';
+        amountClass = 'plus';
+        txIconClass = 'income';
+      } else if (t.type === 'expense') {
+        iconChar = '–';
+        amountClass = 'minus';
+        txIconClass = 'expense';
+      } else if (t.type === 'addToSavings') {
+        iconChar = '⬆️';
+        amountClass = 'savings-plus';
+        txIconClass = 'addToSavings';
+      } else if (t.type === 'withdrawFromSavings') {
+        iconChar = '⬇️';
+        amountClass = 'savings-minus';
+        txIconClass = 'withdrawFromSavings';
+      }
+
+      const metaText = [t.note].filter(Boolean).map(escapeHTML).join(' · ');
       item.innerHTML = `
         <div class="tx-left">
-          <div class="tx-icon ${t.type}">${t.type === 'income' ? '+' : '–'}</div>
+          <div class="tx-icon ${txIconClass}">${iconChar}</div>
           <div>
             <div class="tx-title">${escapeHTML(t.title)}</div>
             <div class="tx-meta">${t.date} ${metaText ? ' · ' + metaText : ''}</div>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="tx-amount ${t.type==='income'?'plus':'minus'}">${t.type==='income'?'+':'-'}${fmt.format(+t.amount)} EGP</div>
-          ${showDelete ? `<button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" onclick="deleteTransaction('${t.id}')">حذف</button>` : ''}
+          <div class="tx-amount ${amountClass}">${(t.type === 'income' || t.type === 'addToSavings') ? '+' : '-'}${fmt.format(+t.amount)} EGP</div>
+          ${showDelete ? `<button class="btn btn-danger" style="padding: 6px 8px; font-size: 12px;" onclick="deleteTransaction('${t.id}', '${t.type === 'addToSavings' || t.type === 'withdrawFromSavings' ? 'savings' : 'main'}')">${translations[currentLanguage].noteDeleteAction}</button>` : ''}
         </div>
       `;
       return item;
@@ -502,35 +1495,31 @@
 
     function renderRecent() {
       recentList.innerHTML = '';
-      if (!transactions.length) {
-        recentList.innerHTML = `<div class="empty">لا توجد معاملات بعد</div>`;
+      const combinedTransactions = [...transactions, ...savingsTransactions];
+      const filtered = filterTransactions(combinedTransactions, currentFilter);
+      const sorted = sortTransactions(filtered, currentSort);
+      const limitedTransactions = sorted.slice(0, RECENT_TRANSACTION_LIMIT); // Apply limit
+      
+      if (!limitedTransactions.length) {
+        recentList.innerHTML = `<div class="empty">${translations[currentLanguage].emptyTransactions}</div>`;
         return;
       }
       
-      const filtered = filterTransactions(transactions, currentFilter);
-      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      const last5 = sorted.slice(0, 5);
-      
-      if (!last5.length) {
-        recentList.innerHTML = `<div class="empty">لا توجد معاملات مطابقة للفلتر</div>`;
-        return;
-      }
-      
-      for (const t of last5) {
+      for (const t of limitedTransactions) {
         recentList.appendChild(createTransactionElement(t));
       }
     }
 
     function renderAllTransactions() {
       allTransactionsList.innerHTML = '';
+      const combinedTransactions = [...transactions, ...savingsTransactions];
+      const filtered = filterTransactions(combinedTransactions, currentFilter);
+      const sorted = sortTransactions(filtered, currentSort);
       
-      const filtered = filterTransactions(transactions, currentFilter);
-      const sorted = [...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      
-      txCountEl.textContent = `${sorted.length} معاملة`;
+      txCountEl.innerHTML = `${sorted.length} <span data-lang-key="txCount">${translations[currentLanguage].txCount}</span>`;
       
       if (!sorted.length) {
-        allTransactionsList.innerHTML = `<div class="empty">لا توجد معاملات</div>`;
+        allTransactionsList.innerHTML = `<div class="empty">${translations[currentLanguage].emptyAllTransactions}</div>`;
         return;
       }
       
@@ -539,122 +1528,239 @@
       }
     }
 
+    function renderSavingsTransactions() {
+      savingsTransactionsList.innerHTML = '';
+      const sorted = sortTransactions(savingsTransactions, currentSort);
+
+      if (!sorted.length) {
+        savingsTransactionsList.innerHTML = `<div class="empty">${translations[currentLanguage].emptySavingsTransactions}</div>`;
+        return;
+      }
+
+      for (const s of sorted) {
+        savingsTransactionsList.appendChild(createTransactionElement(s, true));
+      }
+    }
+
+
     // ====== Delete Transaction ======
-    function deleteTransaction(id) {
-      showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه المعاملة؟', 'تأكيد الحذف', () => {
-        transactions = transactions.filter(t => t.id !== id);
-        writeLS(LS_KEYS.TX, transactions);
+    function deleteTransaction(id, listType) {
+      showConfirmationModal(translations[currentLanguage].confirmationDeleteTx, translations[currentLanguage].confirmationModalTitle, () => {
+        if (listType === 'main') {
+          transactions = transactions.filter(t => t.id !== id);
+          writeLS(LS_KEYS.TX, transactions);
+        } else if (listType === 'savings') {
+          savingsTransactions = savingsTransactions.filter(t => t.id !== id);
+          writeLS(LS_KEYS.SAVINGS, savingsTransactions);
+          // Update currentAmount of goals if this transaction was linked to one
+          savingsGoals.forEach(goal => {
+              if (goal.linkedTransactions && goal.linkedTransactions.includes(id)) {
+                  goal.currentAmount -= (+savingsTransactions.find(tx => tx.id === id).amount);
+                  goal.linkedTransactions = goal.linkedTransactions.filter(txId => txId !== id);
+              }
+          });
+          writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals);
+        }
+        
         renderBalance();
         renderRecent();
         renderAllTransactions();
+        renderSavingsTransactions();
+        renderSavingsGoals(); // Re-render goals after transaction deletion
         updateCategoryList();
-        showNotification('تم حذف المعاملة بنجاح.', 'success');
+        renderCharts();
+        showNotification(translations[currentLanguage].notificationDeleteTxSuccess, 'success');
       });
     }
 
     // ====== Category Auto-complete ======
     function updateCategoryList() {
-      const categoryList = document.getElementById('categoryList');
-      const categories = [...new Set(transactions.map(t => t.category).filter(c => c))];
-      categoryList.innerHTML = categories.map(c => `<option value="${escapeHTML(c)}"></option>`).join('');
+      // This is no longer directly used for input, but kept for consistency if categories are logged internally
     }
 
     // ====== Transactions Modal ======
     const modalTx = document.getElementById('modalTx');
-    const txModalTitle = document.getElementById('txModalTitle'); // Changed ID to avoid conflict with input
-    const txTitleInput = document.getElementById('txTitleInput'); // New input for transaction title
+    const txModalTitle = document.getElementById('txModalTitle');
+    const txTitleInput = document.getElementById('txTitleInput');
     const txAmount = document.getElementById('txAmount');
     const txType = document.getElementById('txType');
-    const txCategory = document.getElementById('txCategory');
     const txDate = document.getElementById('txDate');
     const txNote = document.getElementById('txNote');
-    
+    let currentGoalId = null; // To link 'Add to Savings' transactions to a goal
 
-    function openTx(type='income') {
-      txModalTitle.textContent = type === 'income' ? 'إضافة دخل' : 'إضافة مصروف';
+    function openTx(type='income', initialData = {}, goalId = null) {
+      const t = translations[currentLanguage];
+      if (type === 'income') txModalTitle.textContent = t.modalTxTitleIncome;
+      else if (type === 'expense') txModalTitle.textContent = t.modalTxTitleExpense;
+      else if (type === 'addToSavings') txModalTitle.textContent = t.modalTxTitleAddToSavings;
+      else if (type === 'withdrawFromSavings') txModalTitle.textContent = t.modalTxTitleWithdrawFromSavings;
+      else txModalTitle.textContent = t.modalTxTitleAdd;
+
+      currentGoalId = goalId; // Set the current goal ID
       txType.value = type;
-      txTitleInput.value = ''; // Clear new title input
-      txAmount.value = '';
-      txCategory.value = '';
-      txDate.valueAsDate = new Date();
-      txNote.value = '';
+      txTitleInput.value = initialData.title || '';
+      txAmount.value = initialData.amount || '';
+      txDate.valueAsDate = initialData.date ? new Date(initialData.date) : new Date();
+      txNote.value = initialData.note || (goalId ? `${t.goalInputTitle}: ${savingsGoals.find(g => g.id === goalId).title}` : ''); // Add goal title to note
       modalTx.showModal();
     }
-    function closeTx(){ modalTx.close(); }
+    function closeTx(){ modalTx.close(); currentGoalId = null; }
 
     document.getElementById('btnIncome').addEventListener('click', ()=> openTx('income'));
     document.getElementById('btnExpense').addEventListener('click', ()=> openTx('expense'));
+    document.getElementById('btnAddToSavings').addEventListener('click', ()=> openTx('addToSavings'));
+    document.getElementById('btnAddToSavingsTab').addEventListener('click', ()=> openTx('addToSavings'));
+    document.getElementById('btnWithdrawFromSavingsTab').addEventListener('click', ()=> openTx('withdrawFromSavings'));
+
 
     document.getElementById('txForm').addEventListener('submit', (e)=>{
       e.preventDefault();
+      const t = translations[currentLanguage];
       const amt = parseFloat(txAmount.value||'0');
       if (!(amt>0)) {
-        showNotification('من فضلك أدخل مبلغ صحيح.', 'danger');
+        showNotification(t.notificationAmountError, 'danger');
         return;
       }
       if (!txTitleInput.value.trim()) {
-        showNotification('من فضلك أدخل عنوان المعاملة.', 'danger');
+        showNotification(t.notificationTitleError, 'danger');
         return;
       }
-      const t = {
+      const newTx = {
         id: uid(),
-        title: txTitleInput.value.trim(), // New title field
+        title: txTitleInput.value.trim(),
         type: txType.value,
         amount: amt,
-        category: txCategory.value.trim(),
+        category: '',
+        iconEmoji: '',
         date: txDate.value || todayISO(),
         note: txNote.value.trim(),
         createdAt: new Date().toISOString()
       };
-      transactions.push(t);
-      writeLS(LS_KEYS.TX, transactions);
+      
+      if (newTx.type === 'addToSavings' || newTx.type === 'withdrawFromSavings') {
+        savingsTransactions.push(newTx);
+        writeLS(LS_KEYS.SAVINGS, savingsTransactions);
+
+        // Update savings goal if linked
+        if (currentGoalId && newTx.type === 'addToSavings') {
+            const goalIndex = savingsGoals.findIndex(g => g.id === currentGoalId);
+            if (goalIndex > -1) {
+                savingsGoals[goalIndex].currentAmount += amt;
+                if (!savingsGoals[goalIndex].linkedTransactions) {
+                    savingsGoals[goalIndex].linkedTransactions = [];
+                }
+                savingsGoals[goalIndex].linkedTransactions.push(newTx.id);
+                writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals);
+            }
+        }
+      } else {
+        transactions.push(newTx);
+        writeLS(LS_KEYS.TX, transactions);
+      }
+
       renderBalance();
       renderRecent();
+      renderSavingsTransactions();
+      renderSavingsGoals(); // Re-render goals after transaction
       updateCategoryList();
+      renderCharts();
       closeTx();
-      showNotification('تم حفظ المعاملة بنجاح.', 'success');
+      showNotification(t.notificationTxSaved, 'success');
     });
 
     // ====== Notes Modal ======
     const modalNote = document.getElementById('modalNote');
     const noteInputTitle = document.getElementById('noteInputTitle');
     const noteInputContent = document.getElementById('noteInputContent');
+    const noteAttachmentInput = document.getElementById('noteAttachmentInput');
+    const noteAttachmentPreview = document.getElementById('noteAttachmentPreview');
     const notePinned = document.getElementById('notePinned');
     const noteTitle = document.getElementById('noteTitle');
 
     let editingNoteId = null;
+    let currentAttachmentBase64 = null; // To store the base64 string of the attachment
+
+    // Function to read file as Base64
+    function readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    noteAttachmentInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                currentAttachmentBase64 = await readFileAsBase64(file);
+                noteAttachmentPreview.src = currentAttachmentBase64;
+                noteAttachmentPreview.style.display = 'block';
+            } catch (error) {
+                console.error("Error reading file:", error);
+                currentAttachmentBase64 = null;
+                noteAttachmentPreview.style.display = 'none';
+                noteAttachmentInput.value = ''; // Clear input if error
+                showNotification(translations[currentLanguage].notificationAttachmentError, 'danger');
+            }
+        } else {
+            currentAttachmentBase64 = null;
+            noteAttachmentPreview.style.display = 'none';
+        }
+    });
+
 
     function openNote(editId=null) {
+      const t = translations[currentLanguage];
       editingNoteId = editId;
       if (editId) {
         const n = notes.find(n=>n.id===editId);
         if (!n) return;
-        noteTitle.textContent = 'تعديل نوت';
+        noteTitle.textContent = t.noteModalTitleEdit;
         noteInputTitle.value = n.title || '';
         noteInputContent.value = n.content || '';
         notePinned.checked = !!n.pinned;
+        currentAttachmentBase64 = n.attachment || null;
+        if (currentAttachmentBase64) {
+            noteAttachmentPreview.src = currentAttachmentBase64;
+            noteAttachmentPreview.style.display = 'block';
+        } else {
+            noteAttachmentPreview.style.display = 'none';
+        }
       } else {
-        noteTitle.textContent = 'نوت جديدة';
+        noteTitle.textContent = t.noteModalTitleNew;
         noteInputTitle.value = '';
         noteInputContent.value = '';
         notePinned.checked = false;
+        currentAttachmentBase64 = null;
+        noteAttachmentInput.value = ''; // Clear file input
+        noteAttachmentPreview.style.display = 'none';
       }
       modalNote.showModal();
     }
-    function closeNote(){ modalNote.close(); editingNoteId=null; }
+    function closeNote(){ 
+        modalNote.close(); 
+        editingNoteId=null; 
+        currentAttachmentBase64 = null;
+        noteAttachmentInput.value = ''; // Clear file input on close
+        noteAttachmentPreview.style.display = 'none'; // Hide preview on close
+    }
 
     document.getElementById('btnAddNote').addEventListener('click', ()=> openNote());
 
     document.getElementById('noteForm').addEventListener('submit', (e)=>{
       e.preventDefault();
+      const t = translations[currentLanguage];
       const base = {
         title: (noteInputTitle.value||'').trim(),
         content: (noteInputContent.value||'').trim(),
-        pinned: !!notePinned.checked
+        pinned: !!notePinned.checked,
+        attachment: currentAttachmentBase664 // Include the attachment
       };
       
-      if (!base.title && !base.content) {
-        showNotification('من فضلك أدخل عنوان أو محتوى للنوت.', 'danger');
+      if (!base.title && !base.content && !base.attachment) { /* Added attachment check */
+        showNotification(t.notificationNoteTitleContentError, 'danger');
         return;
       }
       
@@ -669,16 +1775,20 @@
       writeLS(LS_KEYS.NOTES, notes);
       renderNotes();
       closeNote();
-      showNotification('تم حفظ النوت بنجاح.', 'success');
+      showNotification(t.notificationNoteSaved, 'success');
     });
 
     // Quick note from Dashboard
     document.getElementById('btnQuickNote').addEventListener('click', ()=>{
+      const t = translations[currentLanguage];
       editingNoteId = null;
       noteInputTitle.value = '';
       noteInputContent.value = '';
       notePinned.checked = false;
-      noteTitle.textContent = 'نوت سريعة';
+      currentAttachmentBase64 = null;
+      noteAttachmentInput.value = ''; // Clear file input
+      noteAttachmentPreview.style.display = 'none'; // Hide preview
+      noteTitle.textContent = t.noteModalTitleNew; // "نوت سريعة" is essentially a new note
       modalNote.showModal();
     });
 
@@ -687,8 +1797,9 @@
 
     function renderNotes(){
       notesList.innerHTML='';
+      const t = translations[currentLanguage];
       if (!notes.length) { 
-        notesList.innerHTML = `<div class="empty">لا توجد نوتس بعد</div>`; 
+        notesList.innerHTML = `<div class="empty">${t.emptyNotes}</div>`; 
         return; 
       }
       const sorted = [...notes].sort((a,b)=> (b.pinned?1:0) - (a.pinned?1:0) || new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));
@@ -696,13 +1807,14 @@
         const el = document.createElement('div');
         el.className = 'note' + (n.pinned?' pinned':'');
         el.innerHTML = `
-          <div class="note-title">${escapeHTML(n.title||'بدون عنوان')}</div>
+          <div class="note-title">${escapeHTML(n.title||t.noteUntitled)}</div>
           <div class="note-content">${escapeHTML(n.content||'').replace(/\n/g, '<br>')}</div>
-          <div class="note-meta">${new Date(n.updatedAt||n.createdAt).toLocaleString('ar-EG')} ${n.pinned?'📌':''}</div>
+          ${n.attachment ? `<img src="${n.attachment}" class="note-attachment-preview" alt="Note attachment"/>` : ''}
+          <div class="note-meta">${new Date(n.updatedAt||n.createdAt).toLocaleString('en-US')} ${n.pinned?'📌':''}</div> <!-- Fixed date format to en-US for numbers -->
           <div class="note-actions">
-            <button class="btn btn-ghost" data-act="pin" style="font-size: 12px; padding: 6px 10px;">${n.pinned?'إلغاء التثبيت':'تثبيت'}</button>
-            <button class="btn btn-accent" data-act="edit" style="font-size: 12px; padding: 6px 10px;">تعديل</button>
-            <button class="btn btn-danger" data-act="del" style="font-size: 12px; padding: 6px 10px;">حذف</button>
+            <button class="btn btn-ghost" data-act="pin" style="font-size: 12px; padding: 6px 10px;">${n.pinned?t.notePinActionUnpin:t.notePinActionPin}</button>
+            <button class="btn btn-accent" data-act="edit" style="font-size: 12px; padding: 6px 10px;">${t.noteEditAction}</button>
+            <button class="btn btn-danger" data-act="del" style="font-size: 12px; padding: 6px 10px;">${t.noteDeleteAction}</button>
           </div>
         `;
         el.querySelector('[data-act="pin"]').addEventListener('click', ()=>{
@@ -710,28 +1822,158 @@
           n.updatedAt = new Date().toISOString(); 
           writeLS(LS_KEYS.NOTES, notes); 
           renderNotes();
-          showNotification('تم تحديث تثبيت النوت.', 'success');
+          showNotification(t.notificationNotePinUpdated, 'success');
         });
         el.querySelector('[data-act="edit"]').addEventListener('click', ()=> openNote(n.id));
         el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
-          showConfirmationModal('هل أنت متأكد أنك تريد حذف هذه النوت؟', 'تأكيد الحذف', () => {
+          showConfirmationModal(t.confirmationDeleteNote, t.confirmationModalTitle, () => {
             notes = notes.filter(x=>x.id!==n.id); 
             writeLS(LS_KEYS.NOTES, notes); 
             renderNotes();
-            showNotification('تم حذف النوت بنجاح.', 'success');
+            showNotification(t.notificationDeleteNoteSuccess, 'success');
           });
         });
         notesList.appendChild(el);
       }
     }
 
+    // ====== Render Charts ======
+    function renderCharts() {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      if (myChartInstance) {
+        myChartInstance.destroy();
+      }
+
+      const allTransactions = [...transactions, ...savingsTransactions];
+
+      const dataByDate = {};
+      allTransactions.forEach(t => {
+        const date = t.date || t.createdAt.slice(0, 10);
+        if (!dataByDate[date]) {
+          dataByDate[date] = { income: 0, expense: 0, addToSavings: 0, withdrawFromSavings: 0 };
+        }
+        if (t.type === 'income') dataByDate[date].income += +t.amount;
+        else if (t.type === 'expense') dataByDate[date].expense += +t.amount;
+        else if (t.type === 'addToSavings') dataByDate[date].addToSavings += +t.amount;
+        else if (t.type === 'withdrawFromSavings') dataByDate[date].withdrawFromSavings += +t.amount;
+      });
+
+      const dates = Object.keys(dataByDate).sort();
+      const incomeData = dates.map(date => dataByDate[date].income);
+      const expenseData = dates.map(date => dataByDate[date].expense);
+      const addToSavingsData = dates.map(date => dataByDate[date].addToSavings);
+      const withdrawFromSavingsData = dates.map(date => dataByDate[date].withdrawFromSavings);
+
+      const rootStyles = getComputedStyle(document.documentElement);
+      const successColor = rootStyles.getPropertyValue('--success').trim();
+      const dangerColor = rootStyles.getPropertyValue('--danger').trim();
+      const accentColor = rootStyles.getPropertyValue('--accent').trim();
+      const mutedColor = rootStyles.getPropertyValue('--muted').trim();
+      const textColor = rootStyles.getPropertyValue('--text').trim();
+      const bgSoftColor = rootStyles.getPropertyValue('--bg-soft').trim();
+      const warningColor = rootStyles.getPropertyValue('--warning').trim(); /* Get warning color */
+
+
+      const t = translations[currentLanguage];
+
+      myChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: t.chartIncomeLabel,
+              data: incomeData,
+              borderColor: successColor,
+              backgroundColor: successColor + '20',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: t.chartExpenseLabel,
+              data: expenseData,
+              borderColor: dangerColor,
+              backgroundColor: dangerColor + '20',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: t.chartAddToSavingsLabel,
+              data: addToSavingsData,
+              borderColor: warningColor, /* Use warning color for add to savings in chart */
+              backgroundColor: warningColor + '20',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: t.chartWithdrawFromSavingsLabel,
+              data: withdrawFromSavingsData,
+              borderColor: mutedColor, /* Keep muted for withdraw to show it as a less prominent action */
+              backgroundColor: mutedColor + '20',
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: t.chartTitle,
+              color: textColor
+            },
+            legend: {
+                labels: {
+                    color: mutedColor
+                }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: t.chartXAxis,
+                color: mutedColor
+              },
+              ticks: {
+                color: mutedColor
+              },
+              grid: {
+                  color: bgSoftColor
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: t.chartYAxis,
+                color: mutedColor
+              },
+              ticks: {
+                color: mutedColor
+              },
+              grid: {
+                  color: bgSoftColor
+              }
+            }
+          }
+        }
+      });
+    }
+
+
     // ====== Export Data ======
     function exportData() {
+      const t = translations[currentLanguage];
       const data = {
         transactions,
         notes,
+        savingsTransactions,
+        savingsGoals,
+        passwords, // Include passwords in export
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '1.4' // Updated version
       };
       
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -743,24 +1985,81 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showNotification('تم تصدير البيانات بنجاح.', 'success');
+      showNotification(t.notificationExportSuccess, 'success');
     }
 
     document.getElementById('btnExportData').addEventListener('click', exportData);
 
+    // ====== Export CSV Data ======
+    function exportCSV() {
+      const t = translations[currentLanguage];
+      const allData = [...transactions, ...savingsTransactions].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      const headers = [
+        t.txInputDate,
+        t.txInputType,
+        t.txInputTitle,
+        t.txInputAmount,
+        t.txInputNote
+      ].map(h => `"${h.replace(/"/g, '""')}"`).join(','); // Quote headers
+      
+      const rows = allData.map(item => {
+        const typeText = translations[currentLanguage][`txType${item.type.charAt(0).toUpperCase() + item.type.slice(1)}`];
+        return [
+          `"${item.date || new Date(item.createdAt).toISOString().slice(0,10)}"`,
+          `"${typeText}"`,
+          `"${(item.title || '').replace(/"/g, '""')}"`,
+          `"${fmt.format(item.amount)}"`,
+          `"${(item.note || '').replace(/"/g, '""')}"`
+        ].join(',');
+      });
+
+      const csvContent = [headers, ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finote-transactions-${todayISO()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification(t.notificationCSVExportSuccess, 'success');
+    }
+    document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+
+
     // ====== Clear All Data ======
     function clearAllData() {
-      showConfirmationModal('هل أنت متأكد أنك تريد مسح جميع المعاملات والنوتس؟ لا يمكن التراجع عن هذا الإجراء.', 'مسح جميع البيانات', () => {
+      const t = translations[currentLanguage];
+      showConfirmationModal(t.confirmationClearAll, t.confirmationModalTitle, () => {
         transactions = [];
         notes = [];
+        savingsTransactions = [];
+        savingsGoals = []; // Clear savings goals too
+        passwords = []; // Clear passwords too
+        // REMOVED: masterPasswordHash = null; // Clear master password too
         writeLS(LS_KEYS.TX, transactions);
         writeLS(LS_KEYS.NOTES, notes);
+        writeLS(LS_KEYS.SAVINGS, savingsTransactions);
+        writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals);
+        writeLS(LS_KEYS.PASSWORDS, passwords); // Save cleared passwords
+        // REMOVED: writeLS(LS_KEYS.MASTER_PASSWORD_HASH, masterPasswordHash); // Save cleared master password
+        // REMOVED: passwordsUnlocked = false; // Reset lock state
+        currentPasswordServiceFilter = 'all'; // Reset password filter
+        writeLS(LS_KEYS.PASSWORD_FILTER_SERVICE, currentPasswordServiceFilter);
+
         renderBalance();
         renderRecent();
         renderAllTransactions();
+        renderSavingsTransactions();
         renderNotes();
+        renderSavingsGoals(); // Re-render goals after clearing
+        renderPasswordFilters(); // Re-render filters
+        renderPasswords(); // Re-render passwords after clearing
         updateCategoryList();
-        showNotification('تم مسح جميع البيانات بنجاح.', 'success');
+        renderCharts();
+        showNotification(t.notificationClearAllSuccess, 'success');
       });
     }
     document.getElementById('btnClearAll').addEventListener('click', clearAllData);
@@ -782,6 +2081,10 @@
             e.preventDefault();
             openNote();
             break;
+          case '4': // Shortcut for Passwords tab
+            e.preventDefault();
+            document.querySelector('.tab-btn[data-tab="passwords"]').click();
+            break;
         }
       }
     });
@@ -791,6 +2094,26 @@
       return (str||'').replace(/[&<>\"']/g, s=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
     }
 
+    // Function to copy text to clipboard safely
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+
+    // REMOVED: Hash function for master password (simple for demo, use crypto in production)
+    // async function hashPassword(password) {
+    //     const encoder = new TextEncoder();
+    //     const data = encoder.encode(password);
+    //     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    //     const hashArray = Array.from(new Uint8Array(hashBuffer));
+    //     const hashedPassword = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    //     return hashedPassword;
+    // }
+
     // ====== Notification System ======
     function showNotification(message, type = 'success') {
       const notification = document.createElement('div');
@@ -798,8 +2121,8 @@
         position: fixed; top: 20px; right: 20px; z-index: 1000;
         padding: 12px 16px; border-radius: 8px; color: white; font-weight: 600;
         background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
-        box-shadow: var(--shadow); animation: slideIn 0.3s ease forwards; /* Added forwards */
-        opacity: 0; /* Start with opacity 0 for animation */
+        box-shadow: var(--shadow); animation: slideIn 0.3s ease forwards;
+        opacity: 0;
       `;
       notification.textContent = message;
       
@@ -835,26 +2158,474 @@
       closeConfirmationModal();
     });
 
+    // ====== Bill Split Modal Functions ======
+    const modalBillSplit = document.getElementById('modalBillSplit');
+    const billTotalAmountInput = document.getElementById('billTotalAmount');
+    const billNumPeopleInput = document.getElementById('billNumPeople');
+    const perPersonAmountValueSpan = document.getElementById('perPersonAmountValue');
+    const billSplitNoteInput = document.getElementById('billSplitNote');
+
+    function calculatePerPersonAmount() {
+      const total = parseFloat(billTotalAmountInput.value) || 0;
+      const people = parseInt(billNumPeopleInput.value) || 1;
+      const perPerson = people > 0 ? (total / people) : 0;
+      // Use the global fmt for language-aware number formatting
+      perPersonAmountValueSpan.textContent = `${fmt.format(perPerson)} EGP`;
+    }
+
+    document.getElementById('btnBillSplit').addEventListener('click', () => {
+      billTotalAmountInput.value = '';
+      billNumPeopleInput.value = '2';
+      billSplitNoteInput.value = '';
+      calculatePerPersonAmount();
+      modalBillSplit.showModal();
+    });
+
+    billTotalAmountInput.addEventListener('input', calculatePerPersonAmount);
+    billNumPeopleInput.addEventListener('input', calculatePerPersonAmount);
+
+    document.getElementById('billSplitForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = translations[currentLanguage];
+      const total = parseFloat(billTotalAmountInput.value) || 0;
+      const people = parseInt(billNumPeopleInput.value) || 1;
+
+      if (!(total > 0)) {
+        showNotification(t.notificationBillTotalError, 'danger');
+        return;
+      }
+      if (!(people > 0)) {
+        showNotification(t.notificationBillPeopleError, 'danger');
+        return;
+      }
+
+      const perPerson = total / people;
+      const note = billSplitNoteInput.value.trim();
+      const title = `فاتورة مقسمة (${people} أشخاص)`;
+
+      const newTx = {
+        id: uid(),
+        title: title,
+        type: 'expense',
+        amount: perPerson,
+        category: 'تقسيم فاتورة',
+        iconEmoji: '🤝',
+        date: todayISO(),
+        // Format the amount within the note using the language-aware formatter
+        note: note ? `${t.perPersonAmount} ${fmt.format(perPerson)} EGP) - ${note}` : `${t.perPersonAmount} ${fmt.format(perPerson)} EGP`,
+        createdAt: new Date().toISOString()
+      };
+
+      transactions.push(newTx);
+      writeLS(LS_KEYS.TX, transactions);
+
+      renderBalance();
+      renderRecent();
+      renderAllTransactions();
+      updateCategoryList();
+      renderCharts();
+      closeBillSplit();
+      showNotification(t.notificationBillSplitSaved.replace('{amount}', fmt.format(perPerson)), 'success');
+    });
+
+    function closeBillSplit() {
+      modalBillSplit.close();
+    }
+
+    // ====== Savings Goals Functions ======
+    const modalAddGoal = document.getElementById('modalAddGoal');
+    const goalTitleInput = document.getElementById('goalTitleInput');
+    const goalTargetAmountInput = document.getElementById('goalTargetAmountInput');
+    const goalDueDateInput = document.getElementById('goalDueDateInput');
+    const savingsGoalsList = document.getElementById('savingsGoalsList');
+    let editingGoalId = null;
+
+    function openAddGoal(goalId = null) {
+        const t = translations[currentLanguage];
+        editingGoalId = goalId;
+        if (goalId) {
+            const goal = savingsGoals.find(g => g.id === goalId);
+            if (!goal) return;
+            document.getElementById('goalModalTitle').textContent = t.goalEditBtn;
+            goalTitleInput.value = goal.title;
+            goalTargetAmountInput.value = goal.targetAmount;
+            goalDueDateInput.value = goal.dueDate || '';
+        } else {
+            document.getElementById('goalModalTitle').textContent = t.addGoalModalTitle;
+            goalTitleInput.value = '';
+            goalTargetAmountInput.value = '';
+            goalDueDateInput.value = '';
+        }
+        modalAddGoal.showModal();
+    }
+
+    function closeAddGoal() {
+        modalAddGoal.close();
+        editingGoalId = null;
+    }
+
+    document.getElementById('btnAddGoal').addEventListener('click', () => openAddGoal());
+
+    document.getElementById('addGoalForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const t = translations[currentLanguage];
+        const title = goalTitleInput.value.trim();
+        const targetAmount = parseFloat(goalTargetAmountInput.value) || 0;
+        const dueDate = goalDueDateInput.value;
+
+        if (!title) {
+            showNotification(t.notificationGoalTitleError, 'danger');
+            return;
+        }
+        if (!(targetAmount > 0)) {
+            showNotification(t.notificationGoalAmountError, 'danger');
+            return;
+        }
+
+        if (editingGoalId) {
+            const goalIndex = savingsGoals.findIndex(g => g.id === editingGoalId);
+            if (goalIndex > -1) {
+                savingsGoals[goalIndex] = {
+                    ...savingsGoals[goalIndex],
+                    title,
+                    targetAmount,
+                    dueDate,
+                    updatedAt: new Date().toISOString()
+                };
+            }
+        } else {
+            savingsGoals.push({
+                id: uid(),
+                title,
+                targetAmount,
+                currentAmount: 0,
+                dueDate,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                linkedTransactions: [] // Track transactions linked to this goal
+            });
+        }
+        writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals);
+        renderSavingsGoals();
+        closeAddGoal();
+        showNotification(t.notificationGoalSaved, 'success');
+    });
+
+    function deleteGoal(id) {
+        showConfirmationModal(translations[currentLanguage].confirmationDeleteGoal, translations[currentLanguage].confirmationModalTitle, () => {
+            savingsGoals = savingsGoals.filter(g => g.id !== id);
+            writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals);
+            renderSavingsGoals();
+            showNotification(translations[currentLanguage].notificationDeleteGoalSuccess, 'success');
+        });
+    }
+
+    function renderSavingsGoals() {
+        savingsGoalsList.innerHTML = '';
+        const t = translations[currentLanguage];
+        if (!savingsGoals.length) {
+            savingsGoalsList.innerHTML = `<div class="empty">${t.emptySavingsGoals}</div>`;
+            return;
+        }
+
+        savingsGoals.forEach(goal => {
+            const progress = (goal.currentAmount / goal.targetAmount) * 100;
+            const remaining = goal.targetAmount - goal.currentAmount;
+            const isAchieved = goal.currentAmount >= goal.targetAmount;
+
+            const goalItem = document.createElement('div');
+            goalItem.className = 'savings-goal-item';
+            goalItem.innerHTML = `
+                <div class="goal-header">
+                    <div class="goal-title">${escapeHTML(goal.title)}</div>
+                    <div class="goal-target-amount">${fmt.format(goal.currentAmount)} / ${fmt.format(goal.targetAmount)} EGP</div>
+                </div>
+                <div class="goal-progress-bar-container">
+                    <div class="goal-progress-bar" style="width: ${Math.min(100, progress)}%;"></div>
+                </div>
+                <div class="goal-progress-text">
+                    ${isAchieved ? t.goalProgressAchieved : t.goalProgressRemaining.replace('{remaining}', fmt.format(remaining))}
+                    ${goal.dueDate ? ` (${goal.dueDate})` : ''}
+                </div>
+                <div class="goal-actions">
+                    <button class="btn btn-warning" data-goal-id="${goal.id}" data-action="add-funds">${t.goalAddFundsBtn}</button>
+                    <button class="btn btn-accent" data-goal-id="${goal.id}" data-action="edit-goal">${t.goalEditBtn}</button>
+                    <button class="btn btn-danger" data-goal-id="${goal.id}" data-action="delete-goal">${t.goalDeleteBtn}</button>
+                </div>
+            `;
+
+            goalItem.querySelector('[data-action="add-funds"]').addEventListener('click', () => {
+                // Open the regular transaction modal pre-filling 'addToSavings' type and linking to this goal
+                openTx('addToSavings', {}, goal.id);
+            });
+            goalItem.querySelector('[data-action="edit-goal"]').addEventListener('click', () => openAddGoal(goal.id));
+            goalItem.querySelector('[data-action="delete-goal"]').addEventListener('click', () => deleteGoal(goal.id));
+
+            savingsGoalsList.appendChild(goalItem);
+        });
+    }
+
+    // ====== Password Manager Functions ======
+    const modalPassword = document.getElementById('modalPassword');
+    const passwordModalTitle = document.getElementById('passwordModalTitle');
+    const passwordServiceInput = document.getElementById('passwordServiceInput');
+    const passwordUsernameInput = document.getElementById('passwordUsernameInput');
+    const passwordInputPasswordEl = document.getElementById('passwordInputPassword');
+    const passwordWebsiteInput = document.getElementById('passwordWebsiteInput');
+    const passwordNoteInput = document.getElementById('passwordNoteInput');
+    const passwordList = document.getElementById('passwordList');
+    const passwordSearchInput = document.getElementById('passwordSearchInput');
+    const passwordFilterRow = document.getElementById('passwordFilterRow');
+
+    let editingPasswordId = null;
+
+    function openPassword(passwordId = null) {
+      const t = translations[currentLanguage];
+      editingPasswordId = passwordId;
+      if (passwordId) {
+        const p = passwords.find(pw => pw.id === passwordId);
+        if (!p) return;
+        passwordModalTitle.textContent = t.editPasswordModalTitle;
+        passwordServiceInput.value = p.service || '';
+        passwordUsernameInput.value = p.username || '';
+        passwordInputPasswordEl.value = p.password || '';
+        passwordWebsiteInput.value = p.website || '';
+        passwordNoteInput.value = p.note || '';
+      } else {
+        passwordModalTitle.textContent = t.addPasswordModalTitle;
+        passwordServiceInput.value = '';
+        passwordUsernameInput.value = '';
+        passwordInputPasswordEl.value = '';
+        passwordWebsiteInput.value = '';
+        passwordNoteInput.value = '';
+      }
+      // Ensure password input type is 'password' when opening
+      passwordInputPasswordEl.type = 'password';
+      modalPassword.showModal();
+    }
+
+    function closePassword() {
+      modalPassword.close();
+      editingPasswordId = null;
+    }
+
+    document.getElementById('btnAddPassword').addEventListener('click', () => openPassword());
+
+    document.getElementById('passwordForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const t = translations[currentLanguage];
+      const service = passwordServiceInput.value.trim();
+      const username = passwordUsernameInput.value.trim();
+      const password = passwordInputPasswordEl.value.trim();
+      const website = passwordWebsiteInput.value.trim();
+      const note = passwordNoteInput.value.trim();
+
+      if (!service) {
+        showNotification(t.notificationPasswordServiceError, 'danger');
+        return;
+      }
+      if (!username) {
+        showNotification(t.notificationPasswordUsernameError, 'danger');
+        return;
+      }
+      if (!password) {
+        showNotification(t.notificationPasswordPasswordError, 'danger');
+        return;
+      }
+
+      const newPassword = {
+        id: uid(),
+        service,
+        username,
+        password,
+        website,
+        note,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (editingPasswordId) {
+        const index = passwords.findIndex(p => p.id === editingPasswordId);
+        if (index > -1) {
+          passwords[index] = { ...passwords[index], ...newPassword, id: editingPasswordId, updatedAt: new Date().toISOString() };
+        }
+      } else {
+        passwords.unshift(newPassword);
+      }
+      writeLS(LS_KEYS.PASSWORDS, passwords);
+      renderPasswordFilters(); // Re-render filters after adding/editing password
+      renderPasswords();
+      closePassword();
+      showNotification(t.notificationPasswordSaved, 'success');
+    });
+
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('passwordInputPassword');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+      } else {
+        passwordInput.type = 'password';
+      }
+    }
+
+    function deletePassword(id) {
+      showConfirmationModal(translations[currentLanguage].confirmationDeletePassword, translations[currentLanguage].confirmationModalTitle, () => {
+        passwords = passwords.filter(p => p.id !== id);
+        writeLS(LS_KEYS.PASSWORDS, passwords);
+        renderPasswordFilters(); // Re-render filters after deleting password
+        renderPasswords();
+        showNotification(translations[currentLanguage].notificationDeletePasswordSuccess, 'success');
+      });
+    }
+
+    function renderPasswords() {
+      // REMOVED: Master password check here
+      // if (!passwordsUnlocked) {
+      //     passwordList.innerHTML = `<div class="empty">${translations[currentLanguage].masterPasswordPrompt}</div>`; // Show lock message
+      //     return;
+      // }
+
+      passwordList.innerHTML = '';
+      const t = translations[currentLanguage];
+      const searchTerm = passwordSearchInput.value.toLowerCase();
+
+      let filteredPasswords = passwords;
+      if (currentPasswordServiceFilter !== 'all') {
+          filteredPasswords = filteredPasswords.filter(p => p.service.toLowerCase() === currentPasswordServiceFilter.toLowerCase());
+      }
+      
+      filteredPasswords = filteredPasswords.filter(p =>
+        p.service.toLowerCase().includes(searchTerm) ||
+        p.username.toLowerCase().includes(searchTerm) ||
+        p.website.toLowerCase().includes(searchTerm) ||
+        p.note.toLowerCase().includes(searchTerm)
+      );
+
+      if (!filteredPasswords.length) {
+        passwordList.innerHTML = `<div class="empty">${t.emptyPasswords}</div>`;
+        return;
+      }
+
+      filteredPasswords.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'password-item';
+        item.innerHTML = `
+          <div class="password-info">
+            <div class="password-title">${escapeHTML(p.service)}</div>
+            <div class="password-username">${escapeHTML(p.username)}</div>
+          </div>
+          <div class="password-actions">
+            <button class="btn btn-ghost" onclick="copyToClipboard('${escapeHTML(p.username)}'); showNotification(translations[currentLanguage].notificationUsernameCopied, 'success');"><i class="far fa-copy"></i></button>
+            <button class="btn btn-ghost" onclick="copyToClipboard('${escapeHTML(p.password)}'); showNotification(translations[currentLanguage].notificationPasswordCopied, 'success');"><i class="fas fa-key"></i></button>
+            <button class="btn btn-accent" onclick="openPassword('${p.id}')">${t.noteEditAction}</button>
+            <button class="btn btn-danger" onclick="deletePassword('${p.id}')">${t.noteDeleteAction}</button>
+          </div>
+        `;
+        passwordList.appendChild(item);
+      });
+    }
+
+    passwordSearchInput.addEventListener('input', renderPasswords);
+
+    function renderPasswordFilters() {
+        passwordFilterRow.innerHTML = '';
+        const t = translations[currentLanguage];
+
+        // Add 'All' filter button
+        const allBtn = document.createElement('button');
+        allBtn.className = 'password-filter-btn' + (currentPasswordServiceFilter === 'all' ? ' active' : '');
+        allBtn.textContent = t.filterAll;
+        allBtn.dataset.filterService = 'all';
+        allBtn.addEventListener('click', handlePasswordFilterClick);
+        passwordFilterRow.appendChild(allBtn);
+
+        // Get unique services from passwords
+        const services = [...new Set(passwords.map(p => p.service))].sort((a,b) => a.localeCompare(b, currentLanguage)); // Sort alphabetically
+        
+        services.forEach(service => {
+            const btn = document.createElement('button');
+            btn.className = 'password-filter-btn' + (currentPasswordServiceFilter.toLowerCase() === service.toLowerCase() ? ' active' : '');
+            btn.textContent = escapeHTML(service);
+            btn.dataset.filterService = service;
+            btn.addEventListener('click', handlePasswordFilterClick);
+            passwordFilterRow.appendChild(btn);
+        });
+    }
+
+    function handlePasswordFilterClick(event) {
+        document.querySelectorAll('#passwordFilterRow .password-filter-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        currentPasswordServiceFilter = event.target.dataset.filterService;
+        writeLS(LS_KEYS.PASSWORD_FILTER_SERVICE, currentPasswordServiceFilter); // Save selected filter
+        renderPasswords();
+    }
+
+
+    // ====== Master Password Lock Screen Functions ======
+    // REMOVED: All master password related functions (showLockScreen, hideLockScreen, handleMasterPasswordSubmit, resetMasterPassword, promptSetMasterPassword)
+    // and event listeners.
+
 
     // ====== Data validation and cleanup ======
     function validateAndCleanData() {
-      // Clean up invalid transactions
       transactions = transactions.filter(t => t.id && t.type && t.amount && !isNaN(+t.amount));
+      savingsTransactions = savingsTransactions.filter(t => t.id && t.type && t.amount && !isNaN(+t.amount));
+      savingsGoals = savingsGoals.filter(g => g.id && g.title && g.targetAmount && !isNaN(+g.targetAmount)); // Validate goals
+      passwords = passwords.filter(p => p.id && p.service && p.username && p.password); // Validate passwords
       
-      // Add missing 'title' field to old transactions if it doesn't exist
       transactions.forEach(t => {
         if (!t.title) {
-          t.title = t.type === 'income' ? 'دخل' : 'مصروف'; // Default title for old transactions
+          t.title = t.type === 'income' ? translations[currentLanguage].txTypeIncome : translations[currentLanguage].txTypeExpense;
+        }
+        if (!t.iconEmoji) {
+            t.iconEmoji = '';
+        }
+        if (!t.category) {
+            t.category = '';
         }
       });
+      savingsTransactions.forEach(t => {
+        if (!t.title) {
+          t.title = t.type === 'addToSavings' ? translations[currentLanguage].txTypeAddToSavings : translations[currentLanguage].txTypeWithdrawFromSavings;
+        }
+        if (!t.iconEmoji) {
+            t.iconEmoji = '';
+        }
+        if (!t.category) {
+            t.category = '';
+        }
+      });
+      // Ensure currentAmount is calculated correctly for goals based on linked transactions
+      savingsGoals.forEach(goal => {
+          goal.currentAmount = 0;
+          goal.linkedTransactions = goal.linkedTransactions || [];
+          goal.linkedTransactions = goal.linkedTransactions.filter(txId => {
+              const tx = savingsTransactions.find(t => t.id === txId);
+              if (tx && tx.type === 'addToSavings') {
+                  goal.currentAmount += (+tx.amount);
+                  return true;
+              }
+              return false; // Remove if transaction doesn't exist or isn't addToSavings
+          });
+      });
 
-      // Clean up invalid notes  
-      notes = notes.filter(n => n.id && (n.title || n.content));
+
+      notes = notes.filter(n => n.id && (n.title || n.content || n.attachment)); /* Added attachment check */
       
-      // Add missing timestamps
       const now = new Date().toISOString();
       transactions.forEach(t => {
         if (!t.createdAt) t.createdAt = t.date ? new Date(t.date).toISOString() : now;
+      });
+      savingsTransactions.forEach(t => {
+        if (!t.createdAt) t.createdAt = t.date ? new Date(t.date).toISOString() : now;
+      });
+      savingsGoals.forEach(g => {
+        if (!g.createdAt) g.createdAt = now;
+        if (!g.updatedAt) g.updatedAt = g.createdAt;
+      });
+      passwords.forEach(p => { // Add creation/update timestamps to passwords
+        if (!p.createdAt) p.createdAt = now;
+        if (!p.updatedAt) p.updatedAt = p.createdAt;
       });
       
       notes.forEach(n => {
@@ -862,37 +2633,51 @@
         if (!n.updatedAt) n.updatedAt = n.createdAt;
       });
       
-      // Save cleaned data
       writeLS(LS_KEYS.TX, transactions);
       writeLS(LS_KEYS.NOTES, notes);
+      writeLS(LS_KEYS.SAVINGS, savingsTransactions);
+      writeLS(LS_KEYS.SAVINGS_GOALS, savingsGoals); // Save cleaned goals
+      writeLS(LS_KEYS.PASSWORDS, passwords); // Save cleaned passwords
+      // masterPasswordHash is saved when set/cleared explicitly
     }
 
     // ====== Initialize App ======
     function init() {
-      // Validate and clean existing data
       validateAndCleanData();
-      
-      // Setup filters
       setupFilters();
-      
-      // Init date default
+      setupSorting();
       document.getElementById('txDate').valueAsDate = new Date();
       
-      // Initial renders
+      // Update formatter (now fixed to en-US)
+      updateNumberFormatter();
+      updateUI(currentLanguage);
+
       renderBalance();
       renderRecent();
       renderNotes();
-      updateCategoryList();
-      
-      // Reset filters
+      renderSavingsTransactions();
+      renderSavingsGoals(); // Initial render for savings goals
+      renderPasswordFilters(); // Initial render for password filters
+      renderPasswords(); // Initial render for passwords
+
+      // REMOVED: Master password initialization logic
+      // if (masterPasswordHash) {
+      //     passwordsUnlocked = false;
+      //     showLockScreen();
+      // } else {
+      //     passwordsUnlocked = false;
+      // }
+      // With master password removed, passwords are always "unlocked" implicitly
+      // No need for a separate `passwordsUnlocked` state or lock screen
+      // The passwords tab will now render directly.
+
       currentFilter = 'all';
+      currentSort = 'newest';
       
       console.log('Finote initialized successfully!');
     }
 
-    // Start the app
     init();
   </script>
 </body>
 </html>
-
