@@ -62,10 +62,20 @@
     }
     .topbar { display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; }
     .brand { display:flex; gap:8px; align-items:center; font-weight:700; letter-spacing:.3px; }
+    /* Updated logo style to use an image */
     .logo {
       width: 34px; height: 34px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
+      /* Removed gradient background */
+      background-size: cover; /* Ensures image covers the area */
+      background-position: center; /* Centers the image */
       box-shadow: 0 6px 18px rgba(141, 131, 255, .35), inset 0 1px 0 rgba(255,255,255,.25);
+      /* Add an image tag inside for semantic purposes and easy replacement */
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* Ensures the entire image is visible without cropping */
+      border-radius: 12px; /* Apply border-radius to the image itself */
     }
 
     .mode-toggle, .lang-toggle, .passwords-toggle { border: 0; border-radius: 14px; padding: 10px 12px; cursor: pointer;
@@ -77,7 +87,7 @@
         gap: 8px; /* Spacing between mode and lang toggle */
     }
 
-    main { flex: 1 1 auto; padding: 16px; }
+    main { flex: 1 1 auto; padding: 16px; overflow-y: auto; } /* Added overflow-y for scrolling main content */
 
     .card { background: var(--card); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
     .balance { text-align:center; padding: 20px 14px; }
@@ -221,10 +231,33 @@
     }
 
     /* Tabs (bottom nav) */
-    .tabs { position: sticky; bottom: 0; z-index: 10; backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
-            background: linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,0)), var(--bg-soft); box-shadow: var(--shadow); }
-    .tabbar { display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; padding: 10px; } /* Updated to 6 columns for passwords tab */
-    .tab-btn { border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; color: var(--text); background: var(--card); transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; }
+    .tabs { 
+        position: sticky; bottom: 0; z-index: 10; 
+        backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+        background: linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,0)), var(--bg-soft); 
+        box-shadow: var(--shadow); 
+        width: 100%; /* Ensure it takes full width */
+        max-width: 480px; /* Constrain to app max-width */
+        margin: 0 auto; /* Center it */
+        padding: 0 8px; /* Added horizontal padding to prevent icons from going outside */
+    }
+    .tabbar { 
+        display:grid; 
+        grid-template-columns: repeat(6, 1fr); /* Updated to 6 columns for passwords tab */
+        gap:8px; 
+        padding: 10px 0; /* Adjusted padding as horizontal padding is now on .tabs */
+        overflow-x: auto; /* Allow horizontal scrolling for tabs on small screens */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        white-space: nowrap; /* Prevent tab buttons from wrapping */
+    } 
+    .tab-btn { 
+        border:0; border-radius:14px; padding:12px; font-weight:800; cursor:pointer; 
+        color: var(--text); background: var(--card); transition: all 0.2s ease; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        font-size: 14px; 
+        flex-shrink: 0; /* Prevent buttons from shrinking */
+        min-width: 60px; /* Minimum width for each tab button */
+    }
     .tab-btn i { font-size: 20px; margin-bottom: 4px; }
     .tab-btn:hover { transform: translateY(-1px); }
     .tab-btn.active { outline: 2px solid var(--primary); box-shadow: 0 0 0 6px rgba(93,242,255,.12); }
@@ -432,7 +465,13 @@
   <div class="app" id="app">
     <header>
       <div class="topbar">
-        <div class="brand"><div class="logo" aria-hidden="true"></div> Finote</div>
+        <div class="brand">
+          <!-- Changed from div.logo with gradient to img.logo with source -->
+          <div class="logo" aria-hidden="true">
+            <img src="http://googleusercontent.com/file_content/1" alt="Finote Logo" onerror="this.onerror=null;this.src='https://placehold.co/34x34/0b0f14/eaf0f6?text=FN';" />
+          </div> 
+          Finote
+        </div>
         <div class="header-actions">
           <button id="modeBtn" class="mode-toggle" aria-label="تبديل الوضع" data-lang-key="modeToggle">🌙 / ☀️</button>
           <button id="languageBtn" class="lang-toggle" aria-label="تبديل اللغة" data-lang-key="languageToggle">عربي / English</button>
@@ -1449,7 +1488,7 @@
     const txCountEl = document.getElementById('txCount');
 
     // Define a limit for recent transactions
-    const RECENT_TRANSACTION_LIMIT = 4; // Changed limit to 4 to better fit common iPhone screens
+    const RECENT_TRANSACTION_LIMIT = 3; // Reduced to 3 as requested
 
     function createTransactionElement(t, showDelete = false) {
       const item = document.createElement('div');
@@ -1721,7 +1760,7 @@
         noteInputTitle.value = n.title || '';
         noteInputContent.value = n.content || '';
         notePinned.checked = !!n.pinned;
-        currentAttachmentBase64 = n.attachment || null;
+        currentAttachmentBase66 = n.attachment || null;
         if (currentAttachmentBase64) {
             noteAttachmentPreview.src = currentAttachmentBase64;
             noteAttachmentPreview.style.display = 'block';
@@ -1756,7 +1795,7 @@
         title: (noteInputTitle.value||'').trim(),
         content: (noteInputContent.value||'').trim(),
         pinned: !!notePinned.checked,
-        attachment: currentAttachmentBase664 // Include the attachment
+        attachment: currentAttachmentBase64 // Include the attachment
       };
       
       if (!base.title && !base.content && !base.attachment) { /* Added attachment check */
